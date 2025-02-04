@@ -1,0 +1,21 @@
+/// In this file it is only input that is mapped to input devices. Either from Steam Input API, or from a configuration file.
+
+/// Fengrove provides this input for us. It matches the input from the input API.
+/// If not using steam input, you need to specify the input in a configuration file.
+struct IngameInput {
+    move: (Float, Float),
+    ability1: Bool,
+    ability2: Bool,
+}
+
+/// Fengrove provides this input for us. It matches the input from the input API.
+/// If not using steam input, you need to specify the input in a configuration file.
+struct MenuInput {
+    up: Bool,
+    down: Bool,
+    left: Bool,
+    right: Bool,
+    select: Bool,
+    back: Bool,
+}
+
