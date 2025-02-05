@@ -5,10 +5,14 @@
     "ShipMovement"
     {
       "title"     "#ShipMovement"
+
       "Button"
       {
         "Fire"    "#fire"
+        "SecondaryFire"    "#secondary_fire"
+        "Menu"    "#menu"
       }
+
       "StickPadGyro"
       {
         "Move"
@@ -18,6 +22,22 @@
         }
       }
     }
+
+    "Menu"
+    {
+      "title"     "#menu"
+
+      "Button"
+      {
+        "Up"    "#up"
+        "Down"    "#down"
+        "Left"    "#left"
+        "Right"    "#right"
+        "Select"    "#select"
+        "Back"    "#back"
+      }
+
+    }
   }
   "localization"
   {
@@ -26,12 +46,31 @@
       "ShipMovement"    "Ship Movement"
       "move"            "Move"
       "fire"            "Fire"
+      "secondary_fire"  "Secondary Fire"
+
+      "Menu"    "Menu"
+      "up"    "Up"
+      "down"    "Down"
+      "left"    "Left"
+      "right"    "Right"
+      "select"    "Select"
+      "back"    "Back"
     }
     "swedish"
     {
       "ShipMovement"    "Rymdskepp-kontroll"
       "move"            "Flytta"
       "fire"            "skjuta"
+      "secondary_fire"  "raketer"
+
+
+      "Menu"    "Meny"
+      "up"    "Upp"
+      "down"    "Ner"
+      "left"    "Vänster"
+      "right"    "Höger"
+      "select"    "Välj"
+      "back"    "Bak"
     }
   }
 }
