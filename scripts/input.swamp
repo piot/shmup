@@ -2,7 +2,7 @@
 
 /// Fengrove provides this input for us. It matches the input from the input API.
 /// If not using steam input, you need to specify the input in a configuration file.
-struct IngameInput {
+struct Ingame {
     move: (Float, Float),
     ability1: Bool,
     ability2: Bool,

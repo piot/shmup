@@ -1,0 +1,37 @@
+"In Game Actions"
+{
+  "actions"
+  {
+    "ShipMovement"
+    {
+      "title"     "#ShipMovement"
+      "Button"
+      {
+        "Fire"    "#fire"
+      }
+      "StickPadGyro"
+      {
+        "Move"
+        {
+          "title"         "#move"
+          "input_mode"    "joystick_move"
+        }
+      }
+    }
+  }
+  "localization"
+  {
+    "english"
+    {
+      "ShipMovement"    "Ship Movement"
+      "move"            "Move"
+      "fire"            "Fire"
+    }
+    "swedish"
+    {
+      "ShipMovement"    "Rymdskepp-kontroll"
+      "move"            "Flytta"
+      "fire"            "skjuta"
+    }
+  }
+}
