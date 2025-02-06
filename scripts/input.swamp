@@ -2,15 +2,17 @@
 
 /// Fengrove provides this input for us. It matches the input from the input API.
 /// If not using steam input, you need to specify the input in a configuration file.
-struct Ingame {
+struct ShipMovement {
     move: (Float, Float),
-    ability1: Bool,
-    ability2: Bool,
+    fire: Bool,
+    secondaryfire: Bool,
+    menu: Bool,
 }
+
 
 /// Fengrove provides this input for us. It matches the input from the input API.
 /// If not using steam input, you need to specify the input in a configuration file.
-struct MenuInput {
+struct Menu {
     up: Bool,
     down: Bool,
     left: Bool,
@@ -19,3 +21,5 @@ struct MenuInput {
     back: Bool,
 }
 
+
+// TODO: Handle overlays
