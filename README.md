@@ -13,3 +13,5 @@ These are the assets used in the game
 - [Screaming Brain Studios](https://screamingbrainstudios.itch.io/) - [Seamless Space Backgrounds](https://screamingbrainstudios.itch.io/seamless-space-backgrounds) [`cc0 v1.0`](https://creativecommons.org/publicdomain/zero/1.0/)
 
 - [catnipped](https://bsky.app/profile/ossianboren.bsky.social) - Hackman Font
+
+- [Mounir Tohami](https://mounirtohami.itch.io/) - [Pixel Art GUI Elements](https://mounirtohami.itch.io/pixel-art-gui-elements) [`cc0 v1.0`](https://creativecommons.org/publicdomain/zero/1.0/)

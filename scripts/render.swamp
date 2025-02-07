@@ -27,6 +27,7 @@ struct Render {
     explosion_material: mangrove::render::FixedAtlasHandle,
     enemy_projectile: mangrove::render::FixedAtlasHandle,
     background_material: mangrove::render::MaterialHandle,
+    border_material: mangrove::render::MaterialHandle,
     font_and_material: mangrove::render::FontAndMaterialHandle,
     tick: Int,
 }
@@ -47,6 +48,7 @@ impl Render {
             boosters_material: assets.frame_fixed_grid_material_png('player/boosters_16x16', CELL_SIZE, (SIZE*2, SIZE)),
             enemy_projectile: assets.frame_fixed_grid_material_png('projectiles/enemy_projectile', CELL_SIZE, (SIZE*4, SIZE)),
             background_material: assets.material_png('blue_nebula_04-512x512'),
+            border_material: assets.material_png('ui/gui'),
             font_and_material: assets.bm_font('font/hackman'),
             tick: 0,
         }
@@ -137,6 +139,28 @@ impl Render {
     fn render(mut self, logic: simulation::Logic, mut gfx: mangrove::render::Gfx) {
         self.tick += 1
 
+        width_factor = ((self.tick % 32000).to_float() / 20.0).sin() * 0.5 + 0.5
+        height_factor = ((self.tick % 32000).to_float() / 18.0).sin() * 0.5 + 0.5
+        window_x = self.tick % 320
+
+        width =  width_factor * 100.0 + 40.0
+        height = height_factor * 80.0 + 40.0
+        // 48+32
+        gfx.nine_slice((window_x, 50, 0), (width.floor(), height.floor()), (16, 10), self.border_material, (0,118), Color::new(1.0, width_factor, 1.0, 0.9))
+
+        offset = -200 + self.tick % 500
+        smaller_offset = -100 + self.tick % 200
+
+        for i in 0..10 {
+            factor = i.to_float() * 0.1
+
+            red = factor
+            green = 1.0 - factor
+            blue = 0.5 * factor
+
+            gfx.quad((offset + 10 + i * 25, smaller_offset + 20 + i * 4, 0), (20, 10 *i), Color::new(red, green, blue, 1.0))
+        }
+
         self.render_ships(gfx, logic.ships)
         // Render score
         with score=logic.score, mut gfx, font_mat=self.font_and_material {
@@ -175,6 +199,9 @@ impl Render {
                 enemy_pos = (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
                 pulsating_time = enemy.time % 53
                 frame = if pulsating_time < 40  pulsating_time/10  else  0
+
+                gfx.quad(enemy_pos, (15, 15), Color::new(1.0, 1.0, 0.0, 0.01))
+
                 match enemy.enemy {
                     Alan => gfx.sprite_atlas_frame(enemy_pos, self.alan_material, frame),
                     BonBon => gfx.sprite_atlas_frame(enemy_pos, self.bon_bon_material, frame),
