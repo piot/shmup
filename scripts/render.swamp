@@ -1,4 +1,4 @@
-use mangrove.render {
+use mangrove::render {
     SpriteParams,
     Color,
 }
@@ -138,15 +138,25 @@ impl Render {
     /// Called by the mangrove engine every render tick
     fn render(mut self, logic: simulation::Logic, mut gfx: mangrove::render::Gfx) {
         self.tick += 1
+        safe_value = (self.tick % 32000).to_float()
 
-        width_factor = ((self.tick % 32000).to_float() / 20.0).sin() * 0.5 + 0.5
-        height_factor = ((self.tick % 32000).to_float() / 18.0).sin() * 0.5 + 0.5
-        window_x = self.tick % 320
+        width_factor = (safe_value / 40.0).sin() * 0.5 + 0.5
+        height_factor = (safe_value / 68.0).sin() * 0.5 + 0.5
+        window_x = ((safe_value.floor() / 3) % 500) - 100
 
-        width =  width_factor * 100.0 + 40.0
-        height = height_factor * 80.0 + 40.0
-        // 48+32
-        gfx.nine_slice((window_x, 50, 0), (width.floor(), height.floor()), (16, 10), self.border_material, (0,118), Color::new(1.0, width_factor, 1.0, 0.9))
+        width =  width_factor * 40.0 + 40.0
+        height = height_factor * 50.0 + 40.0
+
+
+        gfx.nine_slice(
+            (window_x, 50, 0), // Position
+            (width.floor(), height.floor()), // Size of the window
+            (16, 10), // Corner size in texture
+            (48, 32), // Window size in texture
+            self.border_material, // Material
+            (0,118), // position in texture
+            Color::new(1.0, width_factor, 1.0, 0.9) // Color tint
+        )
 
         offset = -200 + self.tick % 500
         smaller_offset = -100 + self.tick % 200
@@ -158,7 +168,7 @@ impl Render {
             green = 1.0 - factor
             blue = 0.5 * factor
 
-            gfx.quad((offset + 10 + i * 25, smaller_offset + 20 + i * 4, 0), (20, 10 *i), Color::new(red, green, blue, 1.0))
+            //gfx.quad((offset + 10 + i * 25, smaller_offset + 20 + i * 4, 0), (20, 10 *i), Color::new(red, green, blue, 1.0))
         }
 
         self.render_ships(gfx, logic.ships)
