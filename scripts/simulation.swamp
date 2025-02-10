@@ -1,12 +1,24 @@
-use gameplay {
+mod gameplay
+mod math
+
+use crate::gameplay {
     some_utility_function,
     Something,
 }
 
-use math {
+use crate::math {
     Rect,
     Position,
     Size,
+}
+
+use mangrove::collection {
+    SparseId,
+    Sparse,
+}
+
+use mangrove::std {
+    print,
 }
 
 const SCREEN_HEIGHT = 180
@@ -44,7 +56,7 @@ struct Shot {
 struct Player {
     fire: Bool,
     fire_cooldown: Int,
-    assigned_ship_index: std::SparseId?,
+    assigned_ship_index: SparseId?,
     direction: Position,
 }
 
@@ -124,12 +136,12 @@ enum PlayerAction {
 
 struct Logic {
     tick_count: Int, /// how many ticks have passed
-    ships: std::Sparse<Ship>,
-    shots: std::Sparse<Shot>,
-    enemies: std::Sparse<Enemy>,
-    explosions: std::Sparse<Explosion>,
-    score_bonus: std::Sparse<ScoreBonus>,
-    bonus_items: std::Sparse<BonusItem>,
+    ships: Sparse<Ship>,
+    shots: Sparse<Shot>,
+    enemies: Sparse<Enemy>,
+    explosions: Sparse<Explosion>,
+    score_bonus: Sparse<ScoreBonus>,
+    bonus_items: Sparse<BonusItem>,
     players: [Int: Player],
     formations: [Int: Formation],
     cooldown_settings: [Int], // just to test arrays
@@ -174,13 +186,13 @@ impl Logic {
 
         Logic {
             tick_count: 0,
-            shots: std::Sparse<Shot>::new(),
-            enemies: std::Sparse<Enemy>::new(),
-            explosions: std::Sparse<Explosion>::new(),
-            score_bonus: std::Sparse<ScoreBonus>::new(),
-            bonus_items: std::Sparse<BonusItem>::new(),
+            shots: Sparse<Shot>::new(),
+            enemies: Sparse<Enemy>::new(),
+            explosions: Sparse<Explosion>::new(),
+            score_bonus: Sparse<ScoreBonus>::new(),
+            bonus_items: Sparse<BonusItem>::new(),
             players: [ 0: player ],
-            ships: std::Sparse<Ship>::new(),
+            ships: Sparse<Ship>::new(),
             cooldown_settings: [ 10, FIRE_COOLDOWN, 30 ],
             formations: [],
             score: 0,
@@ -201,7 +213,7 @@ impl Logic {
         false
     }
 
-    fn remove_enemy(mut self, id: std::SparseId) -> Bool {
+    fn remove_enemy(mut self, id: SparseId) -> Bool {
         enemy = self.enemies[id]
         when enemy {
             self.enemies.remove(id)
@@ -284,7 +296,7 @@ impl Logic {
 
                 self.score += 100
                 self.score_bonus.add(ScoreBonus { pos: bonus_item.pos, tick: 0, score: 100 })
-                self.bonus_items.remove(bonus_item_id)
+                _ = self.bonus_items.remove(bonus_item_id)
             }
         }
     }
@@ -293,7 +305,7 @@ impl Logic {
         for explosion_id, mut explosion in self.explosions {
             // This is just to show off the guard expression syntax
             | explosion.tick >= 30 -> {
-                self.explosions.remove(explosion_id)
+                _ = self.explosions.remove(explosion_id)
                 }
             | _ -> {
                 explosion.tick += 1
@@ -307,7 +319,7 @@ impl Logic {
             // This is just to show that the scope is not needed for if statements
             // But it is strongly recommended with '{' '}' for easier reading
             if bonus.tick >= 30
-                self.score_bonus.remove(bonus_id)
+                _ = self.score_bonus.remove(bonus_id)
              else {
                 bonus.tick += 1
             }
@@ -317,7 +329,7 @@ impl Logic {
     fn tick_bonus_items(mut self) {
         for bonus_id, mut bonus_item in self.bonus_items {
             if bonus_item.pos.x < -30.0 {
-                self.bonus_items.remove(bonus_id)
+                _ = self.bonus_items.remove(bonus_id)
             } else {
                 bonus_item.pos.x -= 0.6
             }
