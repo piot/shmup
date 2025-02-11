@@ -6,7 +6,9 @@ use mangrove::render {
 mod simulation
 
 use mangrove::collection
-
+use mangrove::collection {
+    Sparse,
+}
 
 const SCREEN_HEIGHT = 180
 const SCREEN_HEIGHT_F = 180.to_float()
@@ -40,21 +42,33 @@ struct Render {
 impl Render {
 
     fn new(mut assets: mangrove::render::Assets) -> Render {
-        player_ship_material = assets.frame_fixed_grid_material_png('player/ship_16x16', CELL_SIZE, SHIP_TEXTURE_SIZE)
+        player_ship_material = assets.frame_fixed_grid_material_png(
+            'player/ship_16x16', CELL_SIZE, SHIP_TEXTURE_SIZE)
 
         Render {
             player_ship_material: player_ship_material,
-            player_shot_material: assets.frame_fixed_grid_material_png('projectiles/player_beam', (8,SIZE), (SIZE*2, SIZE)),
-            alan_material: assets.frame_fixed_grid_material_png('enemies/alan_16x16', CELL_SIZE, (SIZE*6, SIZE)),
-            bon_bon_material: assets.frame_fixed_grid_material_png('enemies/bon_bon_16x16', CELL_SIZE, (SIZE*4, SIZE)),
-            lips_material: assets.frame_fixed_grid_material_png('enemies/lips_16x16', CELL_SIZE, (SIZE*5, SIZE)),
-            bonus_pickup_material: assets.frame_fixed_grid_material_png('items/pickups_16x16', CELL_SIZE, (SIZE*3, SIZE)),
-            explosion_material: assets.frame_fixed_grid_material_png('effects/explosion_16x16', CELL_SIZE, (SIZE*6, SIZE)),
-            boosters_material: assets.frame_fixed_grid_material_png('player/boosters_16x16', CELL_SIZE, (SIZE*2, SIZE)),
-            enemy_projectile: assets.frame_fixed_grid_material_png('projectiles/enemy_projectile', CELL_SIZE, (SIZE*4, SIZE)),
-            background_material: assets.material_png('blue_nebula_04-512x512'),
-            border_material: assets.material_png('ui/gui'),
-            font_and_material: assets.bm_font('font/hackman'),
+            player_shot_material: assets.frame_fixed_grid_material_png(
+                'projectiles/player_beam', (8,SIZE), (SIZE*2, SIZE)),
+            alan_material: assets.frame_fixed_grid_material_png(
+                'enemies/alan_16x16', CELL_SIZE, (SIZE*6, SIZE)),
+            bon_bon_material: assets.frame_fixed_grid_material_png(
+                'enemies/bon_bon_16x16', CELL_SIZE, (SIZE*4, SIZE)),
+            lips_material: assets.frame_fixed_grid_material_png(
+                'enemies/lips_16x16', CELL_SIZE, (SIZE*5, SIZE)),
+            bonus_pickup_material: assets.frame_fixed_grid_material_png(
+                'items/pickups_16x16', CELL_SIZE, (SIZE*3, SIZE)),
+            explosion_material: assets.frame_fixed_grid_material_png(
+                'effects/explosion_16x16', CELL_SIZE, (SIZE*6, SIZE)),
+            boosters_material: assets.frame_fixed_grid_material_png(
+                'player/boosters_16x16', CELL_SIZE, (SIZE*2, SIZE)),
+            enemy_projectile: assets.frame_fixed_grid_material_png(
+                'projectiles/enemy_projectile', CELL_SIZE, (SIZE*4, SIZE)),
+            background_material: assets.material_png(
+                'blue_nebula_04-512x512'),
+            border_material: assets.material_png(
+                'ui/gui'),
+            font_and_material: assets.bm_font(
+                'font/hackman'),
             tick: 0,
         }
     }
@@ -82,7 +96,8 @@ impl Render {
                 gfx.sprite_atlas_frame_ex(shot_pos, self.player_shot_material, 1, shot_sprite_params)
             },
             Magentas => {
-                mag_normalized = (shot.tick.to_float() / 3.0).sin() * 0.5 + 0.5 // mag_ prefix since it conflicted with Tiny {} scope above
+                // mag_ prefix since it conflicted with Tiny {} scope above
+                mag_normalized = (shot.tick.to_float() / 3.0).sin() * 0.5 + 0.5
                 mag_shot_power = mag_normalized * 0.8 + 0.2
                 mag_index = (shot.tick / 10) % 2
                 mag_shot_sprite_params = SpriteParams {
@@ -91,13 +106,14 @@ impl Render {
                     ..
                 }
 
-                gfx.sprite_atlas_frame_ex(shot_pos, self.enemy_projectile, mag_index, mag_shot_sprite_params)
+                gfx.sprite_atlas_frame_ex(shot_pos, self.enemy_projectile, mag_index,
+                    mag_shot_sprite_params)
             }
         }
 
     }
 
-    fn render_score_bonus(self, mut gfx: mangrove::render::Gfx, bonuses: collection::Sparse<simulation::ScoreBonus>) {
+    fn render_score_bonus(self, mut gfx: mangrove::render::Gfx, bonuses: Sparse<simulation::ScoreBonus>) {
         for id, bonus in bonuses {
             score_string = Render::fill_zeroes('{bonus.score}', 2)
 
@@ -173,14 +189,16 @@ impl Render {
             green = 1.0 - factor
             blue = 0.5 * factor
 
-            //gfx.quad((offset + 10 + i * 25, smaller_offset + 20 + i * 4, 0), (20, 10 *i), Color::new(red, green, blue, 1.0))
+            //gfx.quad((offset + 10 + i * 25, smaller_offset + 20 + i * 4, 0), (20, 10 *i),
+                //Color::new(red, green, blue, 1.0))
         }
 
         self.render_ships(gfx, logic.ships)
         // Render score
         with score=logic.score, mut gfx, font_mat=self.font_and_material {
             score_string = Render::fill_zeroes('{score}', 6)
-            gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}', font_mat, Color::new(1.0, 0.8, 1.0, 0.5))
+            gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}',
+                font_mat, Color::new(1.0, 0.8, 1.0, 0.5))
         }
 
         // Render scrolling background
@@ -250,7 +268,8 @@ impl Render {
         with bonus_items = logic.bonus_items, mut gfx, mat = self.bonus_pickup_material {
             for bonus_item in bonus_items {
                 pivot_x, pivot_y = (-3, -3) // bonus is a bit into the sprite frame
-                bonus_pos = (bonus_item.pos.x.floor() + pivot_x, bonus_item.pos.y.floor() + pivot_y, -1)
+                bonus_pos =
+                    (bonus_item.pos.x.floor() + pivot_x, bonus_item.pos.y.floor() + pivot_y, -1)
                 frame = 0
                 gfx.sprite_atlas_frame(bonus_pos, mat, frame)
             }
