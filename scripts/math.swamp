@@ -3,6 +3,8 @@ struct Position {
     y: Float,
 }
 
+type Int2 = (Int, Int)
+
 impl Position {
     fn new(x: Float, y: Float) -> Position {
         Position { x: x, y: y }
@@ -63,7 +65,7 @@ impl Position {
         tuple.magnitude()
     }
 
-    fn floor(self) -> (Int, Int) {
+    fn floor(self) -> Int2 {
         (self.x.floor(), self.y.floor())
     }
 }
