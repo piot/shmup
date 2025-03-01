@@ -1,14 +1,10 @@
-use mangrove::render {
+use mangrove::render::{
     SpriteParams,
     Color,
 }
 
-mod simulation
+use simulation
 
-use mangrove::collection
-use mangrove::collection {
-    Sparse,
-}
 
 const SCREEN_HEIGHT = 180
 const SCREEN_HEIGHT_F = 180.to_float()
@@ -16,7 +12,7 @@ const SCREEN_WIDTH = 320
 const SIZE = 16
 const SHIP_TEXTURE_SIZE = (SIZE*3, SIZE)
 const CELL_SIZE = (SIZE, SIZE)
-const STANDARD_ROTATE = mangrove::render::Rotate::Degrees270
+const STANDARD_ROTATE = 3 //mangrove::render::Rotate::Degrees270
 const SHIP_SPRITE_PARAMS = SpriteParams {
     rotate: STANDARD_ROTATE,
     ..
@@ -88,7 +84,7 @@ impl Render {
                 normalized = (shot.tick.to_float() / 3.0).sin() * 0.5 + 0.5
                 shot_power = normalized * 0.8 + 0.2
                 shot_sprite_params = SpriteParams {
-                    rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
+                    rotate: 1, //mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, shot_power),
                     ..
                 }
@@ -101,7 +97,7 @@ impl Render {
                 mag_shot_power = mag_normalized * 0.8 + 0.2
                 mag_index = (shot.tick / 10) % 2
                 mag_shot_sprite_params = SpriteParams {
-                    rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
+                    rotate: 1, //mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, mag_shot_power),
                     ..
                 }
@@ -125,7 +121,7 @@ impl Render {
         }
     }
 
-    fn render_ships(self, mut gfx: mangrove::render::Gfx, bonuses: collection::Sparse<simulation::Ship>) {
+    fn render_ships(self, mut gfx: mangrove::render::Gfx, bonuses: Sparse<simulation::Ship>) {
         for id, ship in bonuses {
             ship_pos = (ship.rect.pos.x.floor(), ship.rect.pos.y.floor(), 0)
             ship_frame = match ship.direction.y.sign() {
@@ -147,7 +143,7 @@ impl Render {
                 x, y = ship_pos
                 adjusted_pos = (x - 15, y, 0)
                 booster_sprite_params = SpriteParams {
-                    rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
+                    rotate: 1,// mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, normalized_x_movement),
                     ..
                 }
@@ -173,7 +169,7 @@ impl Render {
             (window_x, 50, 0), // Position
             (width.floor(), height.floor()), // Size of the window
             (16, 10), // Corner size in texture
-            (48, 32), // Window size in texture
+            //(48, 32), // Window size in texture
             self.border_material, // Material
             (0,118), // position in texture
             Color::new(1.0, width_factor, 1.0, 0.9) // Color tint
@@ -256,7 +252,7 @@ impl Render {
 
                 power = 1.0 - (explosion.tick.to_float() / 18.0).min(1.0)
                 explosion_sprite_params = SpriteParams {
-                    rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
+                    rotate: 1, //mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, power),
                     ..
                 }

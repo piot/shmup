@@ -1,24 +1,15 @@
 mod gameplay
 mod math
 
-use crate::gameplay {
+use gameplay::{
     some_utility_function,
     Something,
 }
 
-use crate::math {
+use math::{
     Rect,
     Position,
     Size,
-}
-
-use mangrove::collection {
-    SparseId,
-    Sparse,
-}
-
-use mangrove::std {
-    print,
 }
 
 const SCREEN_HEIGHT = 180
@@ -167,11 +158,11 @@ impl Brain {
     fn think(mut self, rand_influence: Int) -> Bool {
         if self.time_until_attack > 0 {
             self.time_until_attack -= 1
-            return false
+            false
+        } else {
+            self.time_until_attack = Prnd::random_range_int(rand_influence, 200, 400)
+            true
         }
-
-        self.time_until_attack = Prnd::random_range_int(rand_influence, 200, 400)
-        true
     }
 }
 
@@ -296,7 +287,7 @@ impl Logic {
 
                 self.score += 100
                 self.score_bonus.add(ScoreBonus { pos: bonus_item.pos, tick: 0, score: 100 })
-                _ = self.bonus_items.remove(bonus_item_id)
+                self.bonus_items.remove(bonus_item_id)
             }
         }
     }
@@ -305,7 +296,7 @@ impl Logic {
         for explosion_id, mut explosion in self.explosions {
             // This is just to show off the guard expression syntax
             | explosion.tick >= 30 -> {
-                _ = self.explosions.remove(explosion_id)
+                self.explosions.remove(explosion_id)
                 }
             | _ -> {
                 explosion.tick += 1
@@ -319,7 +310,7 @@ impl Logic {
             // This is just to show that the scope is not needed for if statements
             // But it is strongly recommended with '{' '}' for easier reading
             if bonus.tick >= 30
-                _ = self.score_bonus.remove(bonus_id)
+                self.score_bonus.remove(bonus_id)
              else {
                 bonus.tick += 1
             }
@@ -329,7 +320,7 @@ impl Logic {
     fn tick_bonus_items(mut self) {
         for bonus_id, mut bonus_item in self.bonus_items {
             if bonus_item.pos.x < -30.0 {
-                _ = self.bonus_items.remove(bonus_id)
+                self.bonus_items.remove(bonus_id)
             } else {
                 bonus_item.pos.x -= 0.6
             }
@@ -373,7 +364,9 @@ impl Logic {
 
     fn closest_ship(self) -> Ship? {
         for ship in self.ships {
-            return ship // HACK: just return the first ship
+            if true {
+                return ship // HACK: just return the first ship
+            }
         }
         none
     }
@@ -496,6 +489,7 @@ impl Logic {
     fn tick(mut self) {
         self.tick_count += 1
 
+        _ = gameplay::some_utility_function(3)
 
         // Input from players to ships
         for player in self.players {
@@ -521,8 +515,10 @@ impl Logic {
                 enemy.rect.pos.y = enemy.base_y + y
 
                 if enemy.rect.pos.x < -32.0 {
-                    self.formations.remove(enemy.formation) // if player missed this, then remove formation
-                    self.remove_enemy(id)
+                    self.formations.remove(enemy.formation)
+                    print("removing")// if player missed this, then remove formation
+                    _ = self.remove_enemy(id)
+                    print("removing done")
                 }
             }
         }
