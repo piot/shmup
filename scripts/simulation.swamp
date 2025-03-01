@@ -231,11 +231,11 @@ impl Logic {
                 was_last_in_formation = self.remove_enemy(enemy_id)
                 score_for_enemy = 10
                 _ = self.explosions.add(Explosion { pos: enemy.rect.pos, tick: 0, type: ExplosionType::Fire })
-                _a = self.score_bonus.add(ScoreBonus { pos: enemy.rect.pos, tick: 0, score: score_for_enemy })
+                _ = self.score_bonus.add(ScoreBonus { pos: enemy.rect.pos, tick: 0, score: score_for_enemy })
                 self.score += score_for_enemy
                 if was_last_in_formation {
                     enemy_middle = enemy.rect.pos.add(Position { x: 4.0, y: 4.0 })
-                    _b = self.bonus_items.add(BonusItem { pos: enemy_middle } )
+                    _ = self.bonus_items.add(BonusItem { pos: enemy_middle } )
                 }
             }
         }
@@ -490,6 +490,9 @@ impl Logic {
         self.tick_count += 1
 
         _ = gameplay::some_utility_function(3)
+        _something = gameplay::some_utility_function2(3)
+        _something = gameplay::some_utility_function2(6)
+
 
         // Input from players to ships
         for player in self.players {
@@ -497,6 +500,8 @@ impl Logic {
         }
 
         self.move_ships()
+
+
 
         // print('cooldown: {cooldown ?? -1} is the value \n\xF0\x9F\x90\x8A\u(1F40A)NEXT LINE (🐊)')
 
@@ -528,7 +533,7 @@ impl Logic {
             screen_rect = Rect {
                 pos: Position {
                     x: 0.0,
-                    y: 0.0,
+                    y: 10.0,
                 },
                 size: Size {
                     width: SCREEN_WIDTH_F,
@@ -559,7 +564,6 @@ impl Logic {
     fn set_player_input_fire(mut self, player_id: Int, fire: Bool) {
         when mut player = mut self.players[player_id] {
             player.fire = fire
-        } else {
         }
         Logic::change_cooldown_setting(mut self.cooldown_settings[ 1 ], 20)
     }

@@ -2,6 +2,17 @@ fn some_utility_function(i: Int) -> Int {
     i * 2
 }
 
+fn some_utility_function2(i: Int) -> Int {
+    if false {
+        a = 3
+        return 4
+    } else {
+        a = 5
+        a
+    }
+}
+
+
 struct Something {
     a: Int,
 }
