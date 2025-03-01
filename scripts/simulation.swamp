@@ -230,12 +230,12 @@ impl Logic {
                 self.shots.remove(shot_id)
                 was_last_in_formation = self.remove_enemy(enemy_id)
                 score_for_enemy = 10
-                self.explosions.add(Explosion { pos: enemy.rect.pos, tick: 0, type: ExplosionType::Fire })
-                self.score_bonus.add(ScoreBonus { pos: enemy.rect.pos, tick: 0, score: score_for_enemy })
+                _ = self.explosions.add(Explosion { pos: enemy.rect.pos, tick: 0, type: ExplosionType::Fire })
+                _a = self.score_bonus.add(ScoreBonus { pos: enemy.rect.pos, tick: 0, score: score_for_enemy })
                 self.score += score_for_enemy
                 if was_last_in_formation {
                     enemy_middle = enemy.rect.pos.add(Position { x: 4.0, y: 4.0 })
-                    _ = self.bonus_items.add(BonusItem { pos: enemy_middle } )
+                    _b = self.bonus_items.add(BonusItem { pos: enemy_middle } )
                 }
             }
         }
@@ -286,7 +286,7 @@ impl Logic {
                 }
 
                 self.score += 100
-                self.score_bonus.add(ScoreBonus { pos: bonus_item.pos, tick: 0, score: 100 })
+                _ = self.score_bonus.add(ScoreBonus { pos: bonus_item.pos, tick: 0, score: 100 })
                 self.bonus_items.remove(bonus_item_id)
             }
         }
