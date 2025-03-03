@@ -189,7 +189,7 @@ impl Render {
                 //Color::new(red, green, blue, 1.0))
         }
 
-        self.render_ships(gfx, logic.ships)
+        self.render_ships(mut gfx, logic.ships)
         // Render score
         with score=logic.score, mut gfx, font_mat=self.font_and_material {
             score_string = Render::fill_zeroes('{score}', 6)
@@ -208,12 +208,12 @@ impl Render {
             })
         }
 
-        self.render_score_bonus(gfx, logic.score_bonus)
+        self.render_score_bonus(mut gfx, logic.score_bonus)
 
         // Render shots
         with shots = logic.shots, mut gfx, self {
             for shot in shots {
-                self.render_shot(gfx, shot)
+                self.render_shot(mut gfx, shot)
             }
         }
 
@@ -226,7 +226,7 @@ impl Render {
                     Lips => 3,
                     }
                 enemy_pos = (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
-                pulsating_time = enemy.time % 53
+                pulsating_time = enemy.could_be_together.time % 53
                 frame = if pulsating_time < 40  pulsating_time/10  else  0
 
                 gfx.quad(enemy_pos, (15, 15), Color::new(1.0, 1.0, 0.0, 0.01))
@@ -275,5 +275,5 @@ impl Render {
 
 /// Called by the mangrove engine at startup
 fn main(mut assets: mangrove::render::Assets) -> Render {
-    Render::new(assets)
+    Render::new(mut assets)
 }

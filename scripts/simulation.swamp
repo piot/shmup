@@ -84,11 +84,15 @@ struct Brain {
 
 struct Enemy {
     rect: Rect,
-    base_y: Float,
+    //base_y: Float,
     direction: Float,
     enemy: EnemyType,
     formation: Int,
-    time: Int,
+    //time: Int,
+    could_be_together: {
+        time: Int,
+        base_y: Float,
+    },
     brain: Brain,
 }
 
@@ -373,7 +377,7 @@ impl Logic {
 
     fn enemies_think(mut self) {
         for id, mut enemy in self.enemies {
-            want_to_attack = enemy.brain.think(enemy.time + self.tick_count + self.prng_x)
+            want_to_attack = enemy.brain.think(enemy.could_be_together.time + self.tick_count + self.prng_x)
             if want_to_attack {
                 target_ship = self.closest_ship() // BUG: didn't check return value
                 when target_ship {
@@ -428,11 +432,12 @@ impl Logic {
 
             _ = self.enemies.add(Enemy {
                 rect: rect,
-                base_y: rect.pos.y,
+                could_be_together: { time: x_offset, base_y: rect.pos.y },
+                //base_y: rect.pos.y,
                 enemy: enemy_type,
                 direction: -1.2,
                 formation: formation_id,
-                time: x_offset,
+                //time: x_offset,
                 brain: Brain { time_until_attack: Prnd::random_range_int(self.prng_x + self.tick_count + x_offset, 100, 500) },
             })
         }
@@ -455,7 +460,7 @@ impl Logic {
     // This is not normally how you structure the code
     // it is just to test mut arguments
     fn move_in_y_with_direction(mut position: Position, direction: Float) {
-        position.y += direction // BUG: doesn't check mutability
+        position.y += direction
         position.y = position.y.clamp(SHIP_Y_MARGIN, SCREEN_HEIGHT_F - SHIP_Y_MARGIN)
     }
 
@@ -466,8 +471,8 @@ impl Logic {
 
     fn move_ships(mut self) {
         for mut ship in self.ships {
-            Logic::move_in_y_with_direction(mut ship.rect.pos, ship.direction.y) // Bug didn't check mutability
-            Logic::move_in_x_with_direction(mut ship.rect.pos, ship.direction.x) // Bug didn't check mutability
+            Logic::move_in_y_with_direction(mut ship.rect.pos, ship.direction.y)
+            Logic::move_in_x_with_direction(mut ship.rect.pos, ship.direction.x)
             self.prng_x = ship.rect.pos.x.floor()
         }
     }
@@ -488,6 +493,14 @@ impl Logic {
     /// Called by the mangrove engine every logic tick
     fn tick(mut self) {
         self.tick_count += 1
+
+        mut x = [10, 20, 30]
+        x += [10, 20]
+        x.push(40)
+        result = x.pop()
+
+        mut y: [Int] = []
+        result2 = y.pop()
 
         _ = gameplay::some_utility_function(3)
         _something = gameplay::some_utility_function2(3)
@@ -513,11 +526,11 @@ impl Logic {
         with mut self, mut enemies = self.enemies {
             for id, mut enemy in enemies {
                 enemy.rect.pos.x += enemy.direction * 1.0
-                enemy.time += 1
-                sway_time = enemy.time.to_float() * 0.02
+                enemy.could_be_together.time += 1
+                sway_time = enemy.could_be_together.time.to_float() * 0.02
                 sway_angle = sway_time * 6.28
                 y = sway_angle.cos() * MAGNITUDE
-                enemy.rect.pos.y = enemy.base_y + y
+                enemy.rect.pos.y = enemy.could_be_together.base_y + y
 
                 if enemy.rect.pos.x < -32.0 {
                     self.formations.remove(enemy.formation)
