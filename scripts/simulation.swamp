@@ -1,12 +1,7 @@
 mod gameplay
-mod math
+mod gameplay::*
 
-use gameplay::{
-    some_utility_function,
-    Something,
-}
-
-use math::{
+mod math::{
     Rect,
     Position,
     Size,
@@ -60,6 +55,16 @@ enum EnemyType {
     Alan,
     BonBon,
     Lips,
+}
+
+impl EnemyType {
+    fn is_cool(self) -> Bool {
+        match self {
+            Alan => false,
+            BonBon => true,
+            Lips => false,
+        }
+    }
 }
 
 struct Waypoints {
@@ -430,18 +435,23 @@ impl Logic {
                 size: Size { width: 16.0, height: 16.0 }
             }
 
-            _ = self.enemies.add(Enemy {
+            direction =
+                | enemy_type.is_cool() -> -1.8
+                | _ -> -1.0
+
+            _ = self.enemies.add( {
                 rect: rect,
                 could_be_together: { time: x_offset, base_y: rect.pos.y },
                 //base_y: rect.pos.y,
                 enemy: enemy_type,
-                direction: -1.2,
+                direction: direction,
                 formation: formation_id,
                 //time: x_offset,
                 brain: Brain { time_until_attack: Prnd::random_range_int(self.prng_x + self.tick_count + x_offset, 100, 500) },
             })
         }
     }
+
 
     fn players_fire_cooldown(mut self) {
         for mut player in self.players {
@@ -503,8 +513,8 @@ impl Logic {
         result2 = y.pop()
 
         _ = gameplay::some_utility_function(3)
-        _something = gameplay::some_utility_function2(3)
-        _something = gameplay::some_utility_function2(6)
+        _something = some_utility_function2(3)
+        _something = some_utility_function2(6)
 
 
         // Input from players to ships
@@ -534,12 +544,11 @@ impl Logic {
 
                 if enemy.rect.pos.x < -32.0 {
                     self.formations.remove(enemy.formation)
-                    print("removing")// if player missed this, then remove formation
                     _ = self.remove_enemy(id)
-                    print("removing done")
                 }
             }
         }
+
 
         // Update shots
         with mut shots = mut self.shots {
@@ -582,7 +591,7 @@ impl Logic {
     }
 
     fn some_guard() -> Bool {
-        true
+        false
     }
 }
 
