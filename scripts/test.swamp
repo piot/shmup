@@ -1,0 +1,22 @@
+mod simulation::{Logic}
+
+#[test]
+fn start_logic() {
+	logic = Logic::new()
+
+	assert(logic.tick_count == 0, "should start with tick count 0")
+	assert(logic.players.len() == 1, "should start with a single default player")
+	//logic.tick()
+	//assert(logic.tick_count == 1, "should increment tick count after tick")
+}
+
+
+#[test]
+fn update_logic() {
+	mut logic = Logic::new()
+
+	assert(logic.tick_count == 0, "should start with tick count 0")
+	assert(logic.players.len() == 1, "should start with a single default player")
+	logic.tick()
+	assert(logic.tick_count == 1, "should increment tick count after tick")
+}

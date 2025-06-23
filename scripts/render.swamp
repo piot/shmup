@@ -1,4 +1,4 @@
-use core::{Sparse, SparseId}
+
 use mangrove::render::{
     SpriteParams,
     Color,
@@ -154,6 +154,7 @@ impl Render {
     }
 
     /// Called by the mangrove engine every render tick
+		#[host_call]
     fn render(mut self, logic: simulation::Logic, mut gfx: mangrove::render::Gfx) {
         gfx.set_virtual_resolution((SCREEN_WIDTH, SCREEN_HEIGHT))
         gfx.set_resolution_scale(10)

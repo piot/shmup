@@ -1,6 +1,3 @@
-use core::{Sparse, SparseId}
-use mangrove::std::{print}
-
 mod gameplay
 mod gameplay::*
 
@@ -71,7 +68,7 @@ impl EnemyType {
 }
 
 struct Waypoints {
-    points: [Position],
+    points: [Position; 8],
 }
 
 enum FormationMovement {
@@ -139,15 +136,15 @@ enum PlayerAction {
 
 struct Logic {
     tick_count: Int, /// how many ticks have passed
-    ships: Sparse<Ship>,
-    shots: Sparse<Shot>,
-    enemies: Sparse<Enemy>,
-    explosions: Sparse<Explosion>,
-    score_bonus: Sparse<ScoreBonus>,
-    bonus_items: Sparse<BonusItem>,
-    players: [Int: Player],
-    formations: [Int: Formation],
-    cooldown_settings: [Int], // just to test arrays
+    ships: Sparse<Ship; 4>,
+    shots: Sparse<Shot; 64>,
+    enemies: Sparse<Enemy; 64>,
+    explosions: Sparse<Explosion; 64>,
+    score_bonus: Sparse<ScoreBonus; 64>,
+    bonus_items: Sparse<BonusItem; 8>,
+    players: [Int: Player; 4],
+    formations: [Int: Formation; 8],
+    cooldown_settings: [Int; 3], // just to test arrays
     score: Int,
     formation_id: Int,
     enemy_type: EnemyType,
@@ -189,15 +186,15 @@ impl Logic {
 
         Logic {
             tick_count: 0,
-            shots: Sparse<Shot>::new(),
-            enemies: Sparse<Enemy>::new(),
-            explosions: Sparse<Explosion>::new(),
-            score_bonus: Sparse<ScoreBonus>::new(),
-            bonus_items: Sparse<BonusItem>::new(),
+            shots: [],
+            enemies: [],
+            explosions: [],
+            score_bonus: [],
+            bonus_items: [],
             players: [ 0: player ],
-            ships: Sparse<Ship>::new(),
+            ships: [],
             cooldown_settings: [ 10, FIRE_COOLDOWN, 30 ],
-            formations: [:],
+            formations: [ : ],
             score: 0,
             formation_id: 0,
             enemy_type: EnemyType::Alan,
@@ -206,84 +203,85 @@ impl Logic {
     }
 
 
-    fn has_enemies_in_formation(self, formation: Int) -> Bool {
-        self.enemies.any(| enemy | enemy.formation == formation)
-}
+  fn has_enemies_in_formation(self, formation: Int) -> Bool {
+    // TODO: //self.enemies.any(| enemy | enemy.formation == formation)
+    true
+  }
 
     fn remove_enemy(mut self, id: SparseId) -> Bool {
         enemy = self.enemies[id]
-            self.enemies.remove(id)
+            // TODO: self.enemies.remove(id)
 
             if self.formations.has(enemy.formation) && !self.has_enemies_in_formation(enemy.formation) {
                 self.formations.remove(enemy.formation)
                 true
             } else {
-								false
-						}
+                false
+            }
     }
 
     fn check_shots_vs_enemies(mut self) {
         self.shots.for(| shot_id, shot | {
             if shot.faction == Faction::Player {
-								for enemy_id, enemy in self.enemies {
-										shot_rect = Rect { pos: Position { x: shot.x, y: shot.y }, size: Size { width: 1.0, height: 2.0 } }
-										if enemy.rect.intersects(shot_rect) {
-												self.shots.remove(shot_id)
-												was_last_in_formation = self.remove_enemy(enemy_id)
-												score_for_enemy = 10
-												_ = self.explosions.add(Explosion { pos: enemy.rect.pos, tick: 0, type: ExplosionType::Fire })
-												_ = self.score_bonus.add(ScoreBonus { pos: enemy.rect.pos, tick: 0, score: score_for_enemy })
-												self.score += score_for_enemy
-												if was_last_in_formation {
-														enemy_middle = enemy.rect.pos.add(Position { x: 4.0, y: 4.0 })
-														_ = self.bonus_items.add(BonusItem { pos: enemy_middle } )
-												}
-										}
-								}
-						}
+                for enemy_id, enemy in self.enemies {
+                    shot_rect = Rect { pos: Position { x: shot.x, y: shot.y }, size: Size { width: 1.0, height: 2.0 } }
+                    if enemy.rect.intersects(shot_rect) {
+                        self.shots.remove(shot_id)
+                        was_last_in_formation = self.remove_enemy(enemy_id)
+                        score_for_enemy = 10
+                        _ = self.explosions.add(Explosion { pos: enemy.rect.pos, tick: 0, type: ExplosionType::Fire })
+                        _ = self.score_bonus.add(ScoreBonus { pos: enemy.rect.pos, tick: 0, score: score_for_enemy })
+                        self.score += score_for_enemy
+                        if was_last_in_formation {
+                            enemy_middle = enemy.rect.pos.add(Position { x: 4.0, y: 4.0 })
+                            _ = self.bonus_items.add(BonusItem { pos: enemy_middle } )
+                        }
+                    }
+                }
+            }
         })
     }
 
-		// TODO: this too complex and should be simplified
+    // TODO: this too complex and should be simplified
     fn check_shots_vs_ships(mut self) {
         self.shots.while (| shot_id, shot | {
             if shot.faction != Faction::Enemy {
                 true
             }
-						else
-						{
-								self.ships.while (| ship_id, ship | {
-										shot_pos = Position { x: shot.x, y: shot.y }
-										if ship.rect.pos.distance(shot_pos) > 8.0 {
-												true
-										} else {
-												self.shots.remove(shot_id)
-												self.ships.remove(ship_id)
+            else
+            {
+                self.ships.while (| ship_id, ship | {
+                    shot_pos = Position { x: shot.x, y: shot.y }
+                    if ship.rect.pos.distance(shot_pos) > 8.0 {
+                        true
+                    } else {
+                        self.shots.remove(shot_id)
+                        self.ships.remove(ship_id)
 
 /*
-												self.players.while(| mut player | {
-														when found_index = player.assigned_ship_index {
-																if found_index == ship_id {
-																		player.assigned_ship_index = none
-																		false
-																} else {
-																		true
-																}
-														} else {
-															true
-														}
-												})
+                        self.players.while(| mut player | {
+                            when found_index = player.assigned_ship_index {
+                                if found_index == ship_id {
+                                    player.assigned_ship_index = none
+                                    false
+                                } else {
+                                    true
+                                }
+                            } else {
+                              true
+                            }
+                        })
 */
 
-												_ = self.explosions.add(Explosion { pos: ship.rect.pos, tick: 0, type: ExplosionType::Fire })
+                        _ = self.explosions.add(Explosion { pos: ship.rect.pos, tick: 0, type: ExplosionType::Fire })
 
-												false
-										}
-           		 })
-							 false
-						}
+                        false
+                    }
+                })
+               false
+            }
         })
-		}
+    }
 
 
     fn check_bonus_vs_ships(mut self) {
@@ -300,9 +298,9 @@ impl Logic {
                 distance = bonus_middle.distance(ship_middle)
 
                 if distance <= 9.0 {
-									self.score += 100
-									_ = self.score_bonus.add(ScoreBonus { pos: bonus_item.pos, tick: 0, score: 100 })
-									self.bonus_items.remove(bonus_item_id)
+                  self.score += 100
+                  _ = self.score_bonus.add(ScoreBonus { pos: bonus_item.pos, tick: 0, score: 100 })
+                  self.bonus_items.remove(bonus_item_id)
                 }
             })
         }
@@ -361,17 +359,17 @@ impl Logic {
 
             when ship_index = player.assigned_ship_index {
                 ship = self.ships[ship_index]
-								if player.fire && player.fire_cooldown == 0 {
-										player.fire_cooldown = self.cooldown_settings[ 1 ]
-										_ = self.shots.add(Shot {
-												x: ship.rect.pos.x + 12.0,
-												y: ship.rect.pos.y + 4.0,
-												direction: Position { x: 8.0, y: 0.0 },
-												tick: 0,
-												faction: Faction::Player,
-												type: ShotType::Tiny,
-										})
-								}
+                if player.fire && player.fire_cooldown == 0 {
+                    player.fire_cooldown = self.cooldown_settings[ 1 ]
+                    _ = self.shots.add(Shot {
+                        x: ship.rect.pos.x + 12.0,
+                        y: ship.rect.pos.y + 4.0,
+                        direction: Position { x: 8.0, y: 0.0 },
+                        tick: 0,
+                        faction: Faction::Player,
+                        type: ShotType::Tiny,
+                    })
+                }
             }
         }
     }
@@ -493,9 +491,9 @@ impl Logic {
         when ship_index = player.assigned_ship_index {
             mut ship = self.ships[ship_index]
             ship.direction = player.direction
-						self.ships[ship_index] = ship
-				} else if player.fire {
-						// print('ship not assigned yet, press fire to assign')
+            self.ships[ship_index] = ship
+        } else if player.fire {
+            // print('ship not assigned yet, press fire to assign')
         } else {
             // print('ship not assigned yet, press fire to assign')
         }
@@ -505,26 +503,12 @@ impl Logic {
     fn tick(mut self) {
         self.tick_count += 1
 
-        mut x = [10, 20, 30]
-        x += [10, 20]
-        x.push(40)
-        result = x.pop()
-
-        mut y: [Int] = []
-        result2 = y.pop()
-
-        _ = gameplay::some_utility_function(3)
-        _something = some_utility_function2(3)
-        _something = some_utility_function2(6)
-
-
         // Input from players to ships
         for player in self.players {
             self.player_input_to_ship_direction(player)
         }
 
         self.move_ships()
-
 
 
         // print('cooldown: {cooldown ?? -1} is the value \n\xF0\x9F\x90\x8A\u(1F40A)NEXT LINE (🐊)')
@@ -534,7 +518,6 @@ impl Logic {
         }
 
         // Update enemies
-				/* TODO: BRING THIS BACK
         with mut self, mut enemies = self.enemies {
             for id, mut enemy in enemies {
                 enemy.rect.pos.x += enemy.direction * 1.0
@@ -550,11 +533,9 @@ impl Logic {
                 }
             }
         }
-				*/
 
 
         // Update shots
-				/* TODO: BRING THIS BACK
         with mut shots = &self.shots {
             screen_rect = Rect {
                 pos: Position {
@@ -566,7 +547,7 @@ impl Logic {
                     height: SCREEN_HEIGHT_F,
                 },
             }
-            for shot_id, mut shot in &shots {
+            for shot_id, mut shot in shots {
                 shot.x += shot.direction.x
                 shot.y += shot.direction.y
                 if !screen_rect.contains_xy(shot.x, shot.y) {
@@ -575,7 +556,6 @@ impl Logic {
                 shot.tick += 1
             }
         }
-				*/
 
         self.tick_explosions()
         self.tick_score_bonus()
@@ -590,8 +570,8 @@ impl Logic {
 
     fn set_player_input_fire(mut self, player_id: Int, fire: Bool) {
         mut player = self.players[player_id]
-				player.fire = fire
-				self.players[player_id] = player
+        player.fire = fire
+        self.players[player_id] = player
         Logic::change_cooldown_setting(&self.cooldown_settings[ 1 ], 20)
     }
 
