@@ -344,6 +344,7 @@ impl Logic {
     fn check_player_input(mut self) {
         for mut player in self.players {
             if player.fire && !player.assigned_ship_index {
+								print('player pressed fire, they have no ship, lets assign one')
                 ship2 = Ship {
                     rect: Rect {
                         pos: Position { x: 20.0, y: 80.0 },
@@ -353,11 +354,12 @@ impl Logic {
                 }
 
                 ship_id = self.ships.add(ship2) // BUG: Didn't check type
+								print('player assigned to ship: {ship_id}')
                 player.assigned_ship_index = ship_id
-                print('player assigned to ship: {ship_id}')
             }
 
             when ship_index = player.assigned_ship_index {
+							  print('player has ship: {ship_index}, look it up')
                 ship = self.ships[ship_index]
                 if player.fire && player.fire_cooldown == 0 {
                     player.fire_cooldown = self.cooldown_settings[ 1 ]
@@ -518,7 +520,7 @@ impl Logic {
         }
 
         // Update enemies
-        with mut self, mut enemies = self.enemies {
+        with mut self, mut enemies = &self.enemies {
             for id, mut enemy in enemies {
                 enemy.rect.pos.x += enemy.direction * 1.0
                 enemy.could_be_together.time += 1
@@ -569,9 +571,7 @@ impl Logic {
     }
 
     fn set_player_input_fire(mut self, player_id: Int, fire: Bool) {
-        mut player = self.players[player_id]
-        player.fire = fire
-        self.players[player_id] = player
+        self.players[player_id].fire = fire
         Logic::change_cooldown_setting(&self.cooldown_settings[ 1 ], 20)
     }
 

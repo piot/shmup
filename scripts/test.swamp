@@ -2,21 +2,51 @@ mod simulation::{Logic}
 
 #[test]
 fn start_logic() {
-	logic = Logic::new()
+    logic = Logic::new()
 
-	assert(logic.tick_count == 0, "should start with tick count 0")
-	assert(logic.players.len() == 1, "should start with a single default player")
-	//logic.tick()
-	//assert(logic.tick_count == 1, "should increment tick count after tick")
+    assert(logic.tick_count == 0, "should start with tick count 0")
+    assert(logic.players.len() == 1, "should start with a single default player")
 }
 
 
 #[test]
 fn update_logic() {
-	mut logic = Logic::new()
+    mut logic = Logic::new()
 
-	assert(logic.tick_count == 0, "should start with tick count 0")
-	assert(logic.players.len() == 1, "should start with a single default player")
-	logic.tick()
-	assert(logic.tick_count == 1, "should increment tick count after tick")
+    assert(logic.tick_count == 0, "should start with tick count 0")
+    assert(logic.players.len() == 1, "should start with a single default player")
+    assert(logic.shots.len() == 0, "should start with no shots")
+    assert(logic.enemies.len() == 0, "should start with no enemies")
+
+    assert(!logic.players[0].fire, "player fire should be false before fire input")
+
+    logic.tick()
+
+    assert(logic.tick_count == 1, "should continue with tick count 1")
+    assert(logic.players.len() == 1, "should continue with a single default player")
+    assert(logic.shots.len() == 0, "should continue with no shots")
+    assert(logic.enemies.len() == 0, "should continue with no enemies")
+
+    logic.set_player_input_fire(0, true)
+
+    logic.tick()
+
+    assert(logic.tick_count == 2, "should increment tick count after second tick")
+    assert(logic.players[0].fire, "player fire should be true after fire input")
+    assert(logic.shots.len() == 1, "should have one shot after firing")
+    assert(logic.enemies.len() == 0, "should have no enemies")
+
+    logic.tick_count = 256 // this is when a formation is formed
+    logic.tick()
+    assert(logic.enemies.len() == 3, 'should have three enemies in first formation: {logic.enemies.len()}')
+
+    mut shots_visited = 0
+    for shot_id, shot in logic.shots {
+        assert(shot.tick == 0, 'shot tick should be zero: {shot.tick}')
+        assert(shot.x == 32.0, 'shot.x: {shot.x}')
+        assert(shot.y == 84.0, 'shot.y: {shot.y}')
+        shots_visited += 1
+    }
+
+    assert(shots_visited == 1, 'should have visited exactly one shot')
 }

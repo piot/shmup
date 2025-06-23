@@ -1,31 +1,31 @@
 /// In this version of the engine, you can not change the name of the fields.
 /// In the future, you will be able to have a configuration file that maps the input device controllers to the fields.
 struct Point {
-	x: Int,
-	y: Int
+    x: Int,
+    y: Int
 }
 
 
 struct PlayerInput {
-        mouse_cursor_position: (Int, Int),
-        mouse_left_button: Bool,
-        mouse_right_button: Bool,
+    mouse_cursor_position: (Int, Int),
+    mouse_left_button: Bool,
+    mouse_right_button: Bool,
 }
 
 struct MouseInput {
-        pos: Point,
-        left_button: Bool,
-        right_button: Bool
+    pos: Point,
+    left_button: Bool,
+    right_button: Bool
 }
 
 impl MouseInput {
-        fn new() -> MouseInput {
-                MouseInput{
-                        pos: {x: 0, y: 0},
-                        left_button: false,
-                        right_button: false
-                }
+    fn new() -> MouseInput {
+        MouseInput {
+            pos: Point { x: 0, y: 0 },
+            left_button: false,
+            right_button: false
         }
+    }
 }
 
 /// In this file it is only input that is mapped to input devices. Either from Steam Input API, or from a configuration file.

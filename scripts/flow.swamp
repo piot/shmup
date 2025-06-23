@@ -1,8 +1,8 @@
 enum State {
-  Start,
-  MainMenu,
-  Game,
-  GameOver,
+    Start,
+    MainMenu,
+    Game,
+    GameOver,
 }
 
 /// This is the top level action that can be taken by the local player.
@@ -38,21 +38,21 @@ struct Flow {
 
 impl Flow {
 
-  fn handle_input(mut self, local_player_id: Int, action: FlowAction) {
-    match action {
-      // Add code here
+    fn handle_input(mut self, local_player_id: Int, action: FlowAction) {
+        match action {
+            // Add code here
+        }
     }
-  }
 
-  fn next(mut self, state: State) -> State {
-      match state {
-        Start => State::MainMenu,
-        MainMenu => {
-          // mangrove::simulation::start_local(Logic::new())
-          State::Game
-      }
+    fn next(mut self, state: State) -> State {
+        match state {
+            Start => State::MainMenu,
+            MainMenu => {
+                // mangrove::simulation::start_local(Logic::new())
+                State::Game
+            }
+        }
     }
-  }
 }
 
 

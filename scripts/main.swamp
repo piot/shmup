@@ -3,19 +3,19 @@ mod render::{Render}
 mod input::{PlayerInput}
 
 fn simulation() -> Logic {
-  main()
+    main()
 }
 
 fn render(mut assets: mangrove::render::Assets) -> Render {
-  Render::new(&assets)
+    Render::new(&assets)
 }
 
 /// Called by the engine at startup to determine the
 /// Input Struct type and default values
 fn input() -> PlayerInput {
-        PlayerInput {
-                mouse_cursor_position: (0, 0),
-                mouse_left_button: false,
-                mouse_right_button: false,
-        }
+    PlayerInput {
+        mouse_cursor_position: (0, 0),
+        mouse_left_button: false,
+        mouse_right_button: false,
+    }
 }

@@ -6,7 +6,6 @@ use mangrove::render::{
 
 mod simulation
 
-
 const SCREEN_HEIGHT = 180
 const SCREEN_HEIGHT_F = 180.to_float()
 const SCREEN_WIDTH = 320
@@ -130,6 +129,7 @@ impl Render {
                 -1.0 => 2,
                 _ => 1,
             }
+
             gfx.sprite_atlas_frame_ex(ship_pos, self.player_ship_material, ship_frame, SHIP_SPRITE_PARAMS)
 
             normalized_x_movement = ship.direction.x.abs() / 0.6
@@ -154,7 +154,7 @@ impl Render {
     }
 
     /// Called by the mangrove engine every render tick
-		#[host_call]
+    #[host_call]
     fn render(mut self, logic: simulation::Logic, mut gfx: mangrove::render::Gfx) {
         gfx.set_virtual_resolution((SCREEN_WIDTH, SCREEN_HEIGHT))
         gfx.set_resolution_scale(10)
@@ -180,17 +180,17 @@ impl Render {
             blue = 0.5 * factor
 
             //gfx.quad((offset + 10 + i * 25, smaller_offset + 20 + i * 4, 0), (20, 10 *i),
-                //Color::new(red, green, blue, 1.0))
+            //Color::new(red, green, blue, 1.0))
         }
 
         self.render_ships(&gfx, logic.ships)
         // Render score
         with score=logic.score, mut gfx=&gfx, font_mat=self.font_and_material {
             score_string = Render::fill_zeroes('{score}', 6)
-						/* TODO: BRING THIS BACK
+            /* TODO: BRING THIS BACK
             gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}',
                 font_mat, Color::new(1.0, 0.8, 1.0, 0.5))
-								*/
+            */
         }
 
         // Render scrolling background
@@ -220,12 +220,12 @@ impl Render {
                     Alan => 1,
                     BonBon => 2,
                     Lips => 3,
-                    }
+                }
                 enemy_pos = (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
                 pulsating_time = enemy.could_be_together.time % 53
                 frame = if pulsating_time < 40  pulsating_time/10  else  0
 
-								/* TODO: BRING THIS BACK
+                /* TODO: BRING THIS BACK
                 gfx.quad(enemy_pos, (15, 15), Color::new(1.0, 1.0, 0.0, 0.01))
                 match enemy.enemy {
                     Alan => gfx.sprite_atlas_frame(enemy_pos, self.alan_material, frame),
@@ -233,7 +233,7 @@ impl Render {
                     Lips => gfx.sprite_atlas_frame(enemy_pos, self.lips_material, frame),
                     _ => {},
                 }
-								*/
+                */
             }
         }
 
@@ -253,9 +253,9 @@ impl Render {
                     color: Color::new(1.0, 1.0, 1.0, power),
                     ..
                 }
-								/* TODO: BRING THIS BACK
+                /* TODO: BRING THIS BACK
                 gfx.sprite_atlas_frame_ex(explosion_pos, mat, frame, explosion_sprite_params)
-								*/
+                */
             }
         }
 
@@ -267,9 +267,9 @@ impl Render {
                     (bonus_item.pos.x.floor() + pivot_x, bonus_item.pos.y.floor() + pivot_y, -1)
                 frame = 0
 
-								/* TODO: BRING THIS BACK
+                /* TODO: BRING THIS BACK
                 gfx.sprite_atlas_frame(bonus_pos, mat, frame)
-								*/
+                */
             }
         }
     }
