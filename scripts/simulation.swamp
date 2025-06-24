@@ -203,21 +203,21 @@ impl Logic {
     }
 
 
-  fn has_enemies_in_formation(self, formation: Int) -> Bool {
-    // TODO: //self.enemies.any(| enemy | enemy.formation == formation)
-    true
-  }
+    fn has_enemies_in_formation(self, formation: Int) -> Bool {
+        true // self.enemies.any(| enemy | enemy.formation == formation)
+    }
 
     fn remove_enemy(mut self, id: SparseId) -> Bool {
         enemy = self.enemies[id]
-            // TODO: self.enemies.remove(id)
 
-            if self.formations.has(enemy.formation) && !self.has_enemies_in_formation(enemy.formation) {
-                self.formations.remove(enemy.formation)
-                true
-            } else {
-                false
-            }
+        _ = self.enemies.remove(id)
+
+        if self.formations.has(enemy.formation) && !self.has_enemies_in_formation(enemy.formation) {
+            self.formations.remove(enemy.formation)
+            true
+        } else {
+            false
+        }
     }
 
     fn check_shots_vs_enemies(mut self) {
@@ -429,6 +429,7 @@ impl Logic {
 
         count_in_formation = Prnd::random_range_int(self.prng_x + self.tick_count, 3, 5)
 
+        print('creating formation {formation_id} with {count_in_formation} enemies of type {enemy_type}')
         for offset_index in 0..count_in_formation {
             random_y = Prnd::random_range_int(self.tick_count, ENEMY_MARGIN, SCREEN_HEIGHT - ENEMY_MARGIN)
             x_offset = offset_index * 32
@@ -441,7 +442,8 @@ impl Logic {
                 | enemy_type.is_cool() -> -1.8
                 | _ -> -1.0
 
-            _ = self.enemies.add( {
+            print('creating enemy {enemy_type} at {rect.pos.x}, {rect.pos.y} with direction {direction} in formation {formation_id}')
+            new_enemy_id = self.enemies.add( {
                 rect: rect,
                 could_be_together: { time: x_offset, base_y: rect.pos.y },
                 //base_y: rect.pos.y,
@@ -451,6 +453,7 @@ impl Logic {
                 //time: x_offset,
                 brain: Brain { time_until_attack: Prnd::random_range_int(self.prng_x + self.tick_count + x_offset, 100, 500) },
             })
+            print('enemy {new_enemy_id} created count: {self.enemies.len()}')
         }
     }
 
@@ -522,21 +525,33 @@ impl Logic {
         }
 
         // Update enemies
-        with mut self, mut enemies = &self.enemies {
-            for id, mut enemy in enemies {
+        //with mut self, mut enemies = &self.enemies {
+            mut enemy_ids_to_remove: Vec<SparseId; 20> = []
+            print('enemies: {self.enemies.len()}')
+            for id, mut enemy in self.enemies {
+                print('update enemies: {id} at {enemy.rect.pos.x}, {enemy.rect.pos.y} in formation {enemy.formation}')
                 enemy.rect.pos.x += enemy.direction * 1.0
                 enemy.could_be_together.time += 1
                 sway_time = enemy.could_be_together.time.to_float() * 0.02
                 sway_angle = sway_time * 6.28
                 y = sway_angle.cos() * MAGNITUDE
+                print('sway_time: {sway_time} raw:{enemy.could_be_together.time}, sway_angle: {sway_angle}, y: {y}')
                 enemy.rect.pos.y = enemy.could_be_together.base_y + y
 
                 if enemy.rect.pos.x < -32.0 {
-                    self.formations.remove(enemy.formation)
-                    _ = self.remove_enemy(id)
+                    print('enemy {id} is out of screen, schedule removal and information about the formation {enemy.formation}')
+                    if self.formations.has(enemy.formation) {
+                        self.formations.remove(enemy.formation)
+                    }
+                    enemy_ids_to_remove.push(id)
                 }
             }
-        }
+
+            for id in enemy_ids_to_remove {
+                print('removing enemy {id}')
+                self.enemies.remove(id)
+            }
+        //}
 
 
         // Update shots
