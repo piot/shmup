@@ -525,10 +525,11 @@ impl Logic {
         }
 
         // Update enemies
-        //with mut self, mut enemies = &self.enemies {
+        // Not a needed `with` statement, but should verify that it works correctly
+        with mut formations=&self.formations, mut enemies = &self.enemies {
             mut enemy_ids_to_remove: Vec<SparseId; 20> = []
-            print('enemies: {self.enemies.len()}')
-            for id, mut enemy in self.enemies {
+            print('enemies: {enemies.len()}')
+            for id, mut enemy in enemies {
                 print('update enemies: {id} at {enemy.rect.pos.x}, {enemy.rect.pos.y} in formation {enemy.formation}')
                 enemy.rect.pos.x += enemy.direction * 1.0
                 enemy.could_be_together.time += 1
@@ -539,8 +540,8 @@ impl Logic {
 
                 if enemy.rect.pos.x < -32.0 {
                     print('enemy {id} is out of screen, schedule removal and information about the formation {enemy.formation}')
-                    if self.formations.has(enemy.formation) {
-                        self.formations.remove(enemy.formation)
+                    if formations.has(enemy.formation) {
+                        formations.remove(enemy.formation)
                     }
                     enemy_ids_to_remove.push(id)
                 }
@@ -548,9 +549,9 @@ impl Logic {
 
             for id in enemy_ids_to_remove {
                 print('---> removing enemy {id}')
-                self.enemies.remove(id)
+                enemies.remove(id)
             }
-        //}
+        }
 
 
         // Update shots
