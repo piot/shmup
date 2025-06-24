@@ -535,7 +535,6 @@ impl Logic {
                 sway_time = enemy.could_be_together.time.to_float() * 0.02
                 sway_angle = sway_time * 6.28
                 y = sway_angle.cos() * MAGNITUDE
-                print('sway_time: {sway_time} raw:{enemy.could_be_together.time}, sway_angle: {sway_angle}, y: {y}')
                 enemy.rect.pos.y = enemy.could_be_together.base_y + y
 
                 if enemy.rect.pos.x < -32.0 {
@@ -548,7 +547,7 @@ impl Logic {
             }
 
             for id in enemy_ids_to_remove {
-                print('removing enemy {id}')
+                print('---> removing enemy {id}')
                 self.enemies.remove(id)
             }
         //}
