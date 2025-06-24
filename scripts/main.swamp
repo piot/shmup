@@ -1,5 +1,5 @@
 mod simulation::{Logic, main}
-//mod render::{Render}
+mod render::{Render}
 //mod input::{PlayerInput}
 
 #[host_call]

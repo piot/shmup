@@ -1,8 +1,5 @@
 
-use mangrove::render::{
-    SpriteParams,
-    Color,
-}
+use mangrove::render::*
 
 mod simulation
 
