@@ -38,7 +38,9 @@ fn update_logic() {
 
     logic.tick_count = 256 // this is when a formation is formed
     logic.tick()
-    assert(logic.enemies.len() == 3, 'should have three enemies in first formation: {logic.enemies.len()}')
+
+    // creating formation 1 with 4 enemies of type BonBon
+    assert(logic.enemies.len() == 4, 'should have four enemies in first formation: {logic.enemies.len()}')
 
     mut shots_visited = 0
     for shot_id, shot in logic.shots {
