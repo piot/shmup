@@ -1,11 +1,13 @@
 mod simulation::{Logic, main}
-mod render::{Render}
-mod input::{PlayerInput}
+//mod render::{Render}
+//mod input::{PlayerInput}
 
+#[host_call]
 fn simulation() -> Logic {
     main()
 }
 
+/*
 fn render(mut assets: mangrove::render::Assets) -> Render {
     Render::new(&assets)
 }
@@ -19,3 +21,5 @@ fn input() -> PlayerInput {
         mouse_right_button: false,
     }
 }
+
+*/

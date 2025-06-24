@@ -113,7 +113,7 @@ struct Explosion {
 
 struct ScoreBonus {
     pos: Position,
-        tick: Int,
+    tick: Int,
     score: Int,
 }
 
@@ -502,8 +502,10 @@ impl Logic {
     }
 
     /// Called by the mangrove engine every logic tick
+    #[host_call]
     fn tick(mut self) {
         self.tick_count += 1
+        print('tick: {self.tick_count}')
 
         // Input from players to ships
         for player in self.players {
