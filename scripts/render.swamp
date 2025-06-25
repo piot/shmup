@@ -114,12 +114,12 @@ impl Render {
             pos_3d = (bonus.pos.x.floor(), bonus.pos.y.floor() + y_offset.floor(), 0)
             power = (20 - bonus.tick).max(0).to_float() / 30.0
 
-            gfx.text(pos_3d, score_string, self.font_and_material, Color::new(0.5, 0.5, 1.0, power))
+            //gfx.text(pos_3d, score_string, self.font_and_material, Color::new(0.5, 0.5, 1.0, power))
         }
     }
 
-    fn render_ships(self, mut gfx: mangrove::render::Gfx, bonuses: Sparse<simulation::Ship>) {
-        for id, ship in bonuses {
+    fn render_ships(self, mut gfx: mangrove::render::Gfx, ships: Sparse<simulation::Ship>) {
+        for id, ship in ships {
             ship_pos = (ship.rect.pos.x.floor(), ship.rect.pos.y.floor(), 0)
             ship_frame = match ship.direction.y.sign() {
                 1.0 => 0,
@@ -180,14 +180,12 @@ impl Render {
             //Color::new(red, green, blue, 1.0))
         }
 
-        self.render_ships(&gfx, logic.ships)
+        //self.render_ships(&gfx, logic.ships)
         // Render score
         with score=logic.score, mut gfx=&gfx, font_mat=self.font_and_material {
-            score_string = Render::fill_zeroes('{score}', 6)
-            /* TODO: BRING THIS BACK
-            gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}',
-                font_mat, Color::new(1.0, 0.8, 1.0, 0.5))
-            */
+            //score_string = Render::fill_zeroes('{score}', 6)
+            //gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}',
+             //   font_mat, Color::new(1.0, 0.8, 1.0, 0.5))
         }
 
         // Render scrolling background
@@ -211,7 +209,7 @@ impl Render {
         }
 
         // Render enemies
-        with enemies=logic.enemies, mut gfx=&gfx, self {
+        with enemies=logic.enemies, mut gfx=&gfx, self=self {
             for id, enemy in enemies {
                 z = match enemy.enemy {
                     Alan => 1,
@@ -222,15 +220,13 @@ impl Render {
                 pulsating_time = enemy.could_be_together.time % 53
                 frame = if pulsating_time < 40  pulsating_time/10  else  0
 
-                /* TODO: BRING THIS BACK
-                gfx.quad(enemy_pos, (15, 15), Color::new(1.0, 1.0, 0.0, 0.01))
+//                gfx.quad(enemy_pos, (15, 15), Color::new(1.0, 1.0, 0.0, 0.01))
                 match enemy.enemy {
                     Alan => gfx.sprite_atlas_frame(enemy_pos, self.alan_material, frame),
                     BonBon => gfx.sprite_atlas_frame(enemy_pos, self.bon_bon_material, frame),
                     Lips => gfx.sprite_atlas_frame(enemy_pos, self.lips_material, frame),
                     _ => {},
                 }
-                */
             }
         }
 
@@ -250,9 +246,7 @@ impl Render {
                     color: Color::new(1.0, 1.0, 1.0, power),
                     ..
                 }
-                /* TODO: BRING THIS BACK
-                gfx.sprite_atlas_frame_ex(explosion_pos, mat, frame, explosion_sprite_params)
-                */
+                 gfx.sprite_atlas_frame_ex(explosion_pos, mat, frame, explosion_sprite_params)
             }
         }
 
@@ -264,9 +258,7 @@ impl Render {
                     (bonus_item.pos.x.floor() + pivot_x, bonus_item.pos.y.floor() + pivot_y, -1)
                 frame = 0
 
-                /* TODO: BRING THIS BACK
                 gfx.sprite_atlas_frame(bonus_pos, mat, frame)
-                */
             }
         }
     }

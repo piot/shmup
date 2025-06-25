@@ -16,7 +16,7 @@ const SHIP_Y_MARGIN = 20.0
 const SHIP_X_MARGIN = 20.0
 const MAGNITUDE = 8.0
 // const STARTING_POS = Position::new(20.0, 80.0)
-const FIRE_COOLDOWN = 15
+const FIRE_COOLDOWN = 25
 
 enum Faction {
     Player,
@@ -221,7 +221,8 @@ impl Logic {
     }
 
     fn check_shots_vs_enemies(mut self) {
-        self.shots.for(| shot_id, shot | {
+        //self.shots.for(| shot_id, shot | {
+        for shot_id, shot in self.shots {
             if shot.faction == Faction::Player {
                 for enemy_id, enemy in self.enemies {
                     shot_rect = Rect { pos: Position { x: shot.x, y: shot.y }, size: Size { width: 1.0, height: 2.0 } }
@@ -239,7 +240,7 @@ impl Logic {
                     }
                 }
             }
-        })
+        }
     }
 
     // TODO: this too complex and should be simplified
@@ -343,11 +344,13 @@ impl Logic {
 
     fn check_player_input(mut self) {
         for mut player in self.players {
+            // HACK: REMOVE THIS LATER
+            player.fire = true
             if player.fire && !player.assigned_ship_index {
                 print('player pressed fire, they have no ship, lets assign one')
                 ship2 = Ship {
                     rect: Rect {
-                        pos: Position { x: 20.0, y: 80.0 },
+                        pos: Position { x: 20.0, y: 89.0 },
                         size: Size { width: 16.0, height: 16.0 },
                     },
                     direction: Position { x: 0.0, y: 0.0 },
@@ -359,7 +362,6 @@ impl Logic {
             }
 
             when ship_index = player.assigned_ship_index {
-                print('player has ship: {ship_index}, look it up')
                 ship = self.ships[ship_index]
                 if player.fire && player.fire_cooldown == 0 {
                     player.fire_cooldown = self.cooldown_settings[ 1 ]
@@ -429,7 +431,7 @@ impl Logic {
 
         count_in_formation = Prnd::random_range_int(self.prng_x + self.tick_count, 3, 5)
 
-        print('creating formation {formation_id} with {count_in_formation} enemies of type {enemy_type}')
+        //print('creating formation {formation_id} with {count_in_formation} enemies of type {enemy_type}')
         for offset_index in 0..count_in_formation {
             random_y = Prnd::random_range_int(self.tick_count, ENEMY_MARGIN, SCREEN_HEIGHT - ENEMY_MARGIN)
             x_offset = offset_index * 32
@@ -442,7 +444,7 @@ impl Logic {
                 | enemy_type.is_cool() -> -1.8
                 | _ -> -1.0
 
-            print('creating enemy {enemy_type} at {rect.pos.x}, {rect.pos.y} with direction {direction} in formation {formation_id}')
+            //print('creating enemy {enemy_type} at {rect.pos.x}, {rect.pos.y} with direction {direction} in formation {formation_id}')
             new_enemy_id = self.enemies.add( {
                 rect: rect,
                 could_be_together: { time: x_offset, base_y: rect.pos.y },
@@ -453,7 +455,7 @@ impl Logic {
                 //time: x_offset,
                 brain: Brain { time_until_attack: Prnd::random_range_int(self.prng_x + self.tick_count + x_offset, 100, 500) },
             })
-            print('enemy {new_enemy_id} created count: {self.enemies.len()}')
+            //print('enemy {new_enemy_id} created count: {self.enemies.len()}')
         }
     }
 
@@ -508,7 +510,6 @@ impl Logic {
     #[host_call]
     fn tick(mut self) {
         self.tick_count += 1
-        print('tick: {self.tick_count}')
 
         // Input from players to ships
         for player in self.players {
@@ -528,9 +529,7 @@ impl Logic {
         // Not a needed `with` statement, but should verify that it works correctly
         with mut formations=&self.formations, mut enemies = &self.enemies {
             mut enemy_ids_to_remove: Vec<SparseId; 20> = []
-            print('enemies: {enemies.len()}')
             for id, mut enemy in enemies {
-                print('update enemies: {id} at {enemy.rect.pos.x}, {enemy.rect.pos.y} in formation {enemy.formation}')
                 enemy.rect.pos.x += enemy.direction * 1.0
                 enemy.could_be_together.time += 1
                 sway_time = enemy.could_be_together.time.to_float() * 0.02
@@ -539,7 +538,7 @@ impl Logic {
                 enemy.rect.pos.y = enemy.could_be_together.base_y + y
 
                 if enemy.rect.pos.x < -32.0 {
-                    print('enemy {id} is out of screen, schedule removal and information about the formation {enemy.formation}')
+                    //print('enemy {id} is out of screen, schedule removal and information about the formation {enemy.formation}')
                     if formations.has(enemy.formation) {
                         formations.remove(enemy.formation)
                     }
@@ -548,7 +547,6 @@ impl Logic {
             }
 
             for id in enemy_ids_to_remove {
-                print('---> removing enemy {id}')
                 enemies.remove(id)
             }
         }
