@@ -1,5 +1,6 @@
 mod gameplay
 mod gameplay::*
+mod input::{PlayerInput}
 
 mod math::{
     Rect,
@@ -580,7 +581,7 @@ impl Logic {
         self.tick_bonus_items()
         self.enemies_think()
         self.check_shots_vs_enemies()
-        self.check_shots_vs_ships()
+        //self.check_shots_vs_ships()
         self.check_player_input()
         self.players_fire_cooldown()
     }
@@ -588,6 +589,10 @@ impl Logic {
     fn set_player_input_fire(mut self, player_id: Int, fire: Bool) {
         self.players[player_id].fire = fire
         Logic::change_cooldown_setting(&self.cooldown_settings[ 1 ], 20)
+    }
+
+    #[host_call]
+	fn input_changed(mut self, input: PlayerInput) {
     }
 
     fn some_guard() -> Bool {

@@ -1,6 +1,6 @@
 mod simulation::{Logic, main}
 mod render::{Render}
-//mod input::{PlayerInput}
+mod input::{PlayerInput}
 
 #[host_call]
 fn simulation() -> Logic {
@@ -12,10 +12,10 @@ fn render(mut assets: mangrove::render::Assets) -> Render {
     Render::new(&assets)
 }
 
-/*
 
 /// Called by the engine at startup to determine the
 /// Input Struct type and default values
+#[host_call]
 fn input() -> PlayerInput {
     PlayerInput {
         mouse_cursor_position: (0, 0),
@@ -23,5 +23,3 @@ fn input() -> PlayerInput {
         mouse_right_button: false,
     }
 }
-
-*/
