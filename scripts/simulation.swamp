@@ -426,7 +426,7 @@ impl Logic {
 
     fn create_formation(mut self) {
         self.formation_id += 1
-        self.formation_id %= 1024
+        self.formation_id %= 4096
         formation_id = self.formation_id
 
         enemy_type = self.next_formation_enemy_type()
