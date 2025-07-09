@@ -61,9 +61,9 @@ enum EnemyType {
 impl EnemyType {
     fn is_cool(self) -> Bool {
         match self {
-            Alan => false,
-            BonBon => true,
-            Lips => false,
+            Alan -> false,
+            BonBon -> true,
+            Lips -> false,
         }
     }
 }
@@ -380,9 +380,12 @@ impl Logic {
     }
 
     fn closest_ship(self) -> Ship? {
+        /*
         self.ships.find(| ship| {
             true  //HACK: just return the first ship
         })
+        */
+        none
     }
 
     fn enemies_think(mut self) {
@@ -410,9 +413,9 @@ impl Logic {
 
     fn next_enemy_type(enemy_type: EnemyType) -> EnemyType {
         match enemy_type {
-            Alan => EnemyType::BonBon,
-            BonBon => EnemyType::Lips,
-            Lips => EnemyType::Alan,
+            Alan -> EnemyType::BonBon,
+            BonBon -> EnemyType::Lips,
+            Lips -> EnemyType::Alan,
         }
     }
 

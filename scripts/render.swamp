@@ -77,7 +77,7 @@ impl Render {
     fn render_shot(self, mut gfx: mangrove::render::Gfx, shot: simulation::Shot) {
         shot_pos = (shot.x.floor(), shot.y.floor(), 0)
         match shot.type {
-            Tiny => {
+            Tiny -> {
                 normalized = (shot.tick.to_float() / 3.0).sin() * 0.5 + 0.5
                 shot_power = normalized * 0.8 + 0.2
                 shot_sprite_params = SpriteParams {
@@ -88,7 +88,7 @@ impl Render {
 
                 gfx.sprite_atlas_frame_ex(shot_pos, self.player_shot_material, 1, shot_sprite_params)
             },
-            Magentas => {
+            Magentas -> {
                 // mag_ prefix since it conflicted with Tiny {} scope above
                 mag_normalized = (shot.tick.to_float() / 3.0).sin() * 0.5 + 0.5
                 mag_shot_power = mag_normalized * 0.8 + 0.2
@@ -122,9 +122,9 @@ impl Render {
         for id, ship in ships {
             ship_pos = (ship.rect.pos.x.floor(), ship.rect.pos.y.floor(), 0)
             ship_frame = match ship.direction.y.sign() {
-                1.0 => 0,
-                -1.0 => 2,
-                _ => 1,
+                1.0 -> 0,
+                -1.0 -> 2,
+                _ -> 1,
             }
 
             gfx.sprite_atlas_frame_ex(ship_pos, self.player_ship_material, ship_frame, SHIP_SPRITE_PARAMS)
@@ -154,7 +154,7 @@ impl Render {
     #[host_call]
     fn render(mut self, logic: simulation::Logic, mut gfx: mangrove::render::Gfx) {
         gfx.set_virtual_resolution((SCREEN_WIDTH, SCREEN_HEIGHT))
-        gfx.set_resolution_scale(10)
+        gfx.set_resolution_scale(1)
 
         self.tick += 1
         safe_value = (self.tick % 32000).to_float()
@@ -212,9 +212,9 @@ impl Render {
         with enemies=logic.enemies, mut gfx=&gfx, self=self {
             for id, enemy in enemies {
                 z = match enemy.enemy {
-                    Alan => 1,
-                    BonBon => 2,
-                    Lips => 3,
+                    Alan -> 1,
+                    BonBon -> 2,
+                    Lips -> 3,
                 }
                 enemy_pos = (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
                 pulsating_time = enemy.could_be_together.time % 53
@@ -222,10 +222,10 @@ impl Render {
 
 //                gfx.quad(enemy_pos, (15, 15), Color::new(1.0, 1.0, 0.0, 0.01))
                 match enemy.enemy {
-                    Alan => gfx.sprite_atlas_frame(enemy_pos, self.alan_material, frame),
-                    BonBon => gfx.sprite_atlas_frame(enemy_pos, self.bon_bon_material, frame),
-                    Lips => gfx.sprite_atlas_frame(enemy_pos, self.lips_material, frame),
-                    _ => {},
+                    Alan -> gfx.sprite_atlas_frame(enemy_pos, self.alan_material, frame),
+                    BonBon -> gfx.sprite_atlas_frame(enemy_pos, self.bon_bon_material, frame),
+                    Lips -> gfx.sprite_atlas_frame(enemy_pos, self.lips_material, frame),
+                    _ -> {},
                 }
             }
         }
