@@ -9,9 +9,9 @@ mod math::{
 }
 
 const SCREEN_HEIGHT = 180
-const SCREEN_HEIGHT_F = 180.to_float()
+const SCREEN_HEIGHT_F = 180.float()
 const SCREEN_WIDTH = 320
-const SCREEN_WIDTH_F = 320.to_float()
+const SCREEN_WIDTH_F = 320.float()
 const ENEMY_MARGIN = 20
 const SHIP_Y_MARGIN = 20.0
 const SHIP_X_MARGIN = 20.0
@@ -156,7 +156,7 @@ struct Prnd
 
 impl Prnd {
     fn random_range(value: Float, min: Int, max: Int) -> Int {
-        min + (value.rnd() % (max - min).to_float()).floor()
+        min + (value.rnd() % (max - min).float()).floor()
     }
 
     fn random_range_int(value: Int, min: Int, max: Int) -> Int {
@@ -426,7 +426,7 @@ impl Logic {
 
     fn create_formation(mut self) {
         self.formation_id += 1
-        self.formation_id %= 4096
+        self.formation_id %= self.formations.capacity()
         formation_id = self.formation_id
 
         enemy_type = self.next_formation_enemy_type()
@@ -440,7 +440,7 @@ impl Logic {
             random_y = Prnd::random_range_int(self.tick_count, ENEMY_MARGIN, SCREEN_HEIGHT - ENEMY_MARGIN)
             x_offset = offset_index * 32
             rect = Rect {
-                pos: Position { x: SCREEN_WIDTH.to_float() + 32.0 + x_offset.to_float(), y: random_y.to_float() },
+                pos: Position { x: SCREEN_WIDTH.float() + 32.0 + x_offset.float(), y: random_y.float() },
                 size: Size { width: 16.0, height: 16.0 }
             }
 
@@ -536,7 +536,7 @@ impl Logic {
             for id, mut enemy in enemies {
                 enemy.rect.pos.x += enemy.direction * 1.0
                 enemy.could_be_together.time += 1
-                sway_time = enemy.could_be_together.time.to_float() * 0.02
+                sway_time = enemy.could_be_together.time.float() * 0.02
                 sway_angle = sway_time * 6.28
                 y = sway_angle.cos() * MAGNITUDE
                 enemy.rect.pos.y = enemy.could_be_together.base_y + y

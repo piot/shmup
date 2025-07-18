@@ -1,32 +1,5 @@
 /// In this version of the engine, you can not change the name of the fields.
 /// In the future, you will be able to have a configuration file that maps the input device controllers to the fields.
-struct Point {
-    x: Int,
-    y: Int
-}
-
-
-struct PlayerInput {
-    mouse_cursor_position: (Int, Int),
-    mouse_left_button: Bool,
-    mouse_right_button: Bool,
-}
-
-struct MouseInput {
-    pos: Point,
-    left_button: Bool,
-    right_button: Bool
-}
-
-impl MouseInput {
-    fn new() -> MouseInput {
-        MouseInput {
-            pos: Point { x: 0, y: 0 },
-            left_button: false,
-            right_button: false
-        }
-    }
-}
 
 /// In this file it is only input that is mapped to input devices. Either from Steam Input API, or from a configuration file.
 
@@ -42,7 +15,7 @@ struct ShipMovement {
 
 /// Fengrove provides this input for us. It matches the input from the input API.
 /// If not using steam input, you need to specify the input in a configuration file.
-struct Menu {
+struct MenuInput {
     up: Bool,
     down: Bool,
     left: Bool,
@@ -50,6 +23,37 @@ struct Menu {
     select: Bool,
     back: Bool,
 }
+
+
+enum ActionSets {
+    ShipMovement ShipMovement,
+    Menu MenuInput,
+}
+
+struct NextPlayerInput {
+    sets: ActionSets,
+}
+
+/// In this version of the engine, you can not change the name of the fields.
+/// In the future, you will be able to have a configuration file that maps the input device controllers to the fields.
+struct PlayerInput {
+	mouse_cursor_position: (Int, Int),
+	mouse_left_button: Bool,
+	mouse_right_button: Bool,
+}
+
+
+impl PlayerInput {
+    fn new() -> PlayerInput {
+        PlayerInput {
+                mouse_cursor_position: (0, 0),
+                mouse_left_button: false,
+                mouse_right_button: false,
+            }
+    }
+}
+
+
 
 
 // TODO: Handle overlays
