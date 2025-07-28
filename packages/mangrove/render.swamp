@@ -38,11 +38,28 @@ struct URect {
     size: Size2,
 }
 
-struct Glyph {
-    relative_position: Pos2,
-    rect: URect,
+struct FontInfo {
+    base: Int,
+    line_height: Int,
+    size: Int,
 }
 
+struct AtlasInfo {
+    one_cell_size: Size2,
+    texture_size: Size2,
+}
+
+struct Glyph {
+   id: Int,
+   ch: Char,
+   x: Int,
+   y: Int,
+   width: Int,
+   height: Int,
+   y_offset: Int,
+   x_offset: Int,
+   x_advance: Int,
+}
 
 /// Specific extra parameters that should be used in sprite rendering
 struct SpriteParams {
@@ -86,9 +103,14 @@ struct NineSlice {
     bottom: Int, // How many pixels from the bottom side of the texture that will be used in the border
 }
 
-enum CoordinateSystemAndOrigin {
-    RightHandBottomLeft,
-    OldSchoolScreenCoordinateSystem,
+enum CoordinateSystem {
+    BottomLeft,
+    TopLeft,
+}
+
+enum ScaleStrategy {
+    IntScaling,
+    FloatScaling,
 }
 
 struct Gfx
@@ -116,10 +138,14 @@ impl Gfx {
     external 1007 fn text(mut self, position: Pos3, text: String, material: FontAndMaterialHandle, color: Color)
     external 1012 fn text_top(mut self, position: Pos3, text: String, material: FontAndMaterialHandle, color: Color)
 
+    external 1015 fn font_info(self, handle: FontAndMaterialHandle) -> FontInfo?
+    external 1016 fn atlas_info(self, handle: FixedAtlasHandle) -> AtlasInfo
+
     external 1008 fn text_glyphs(mut self, text: String, material: FontAndMaterialHandle) -> [Glyph]
 
-    external 1009 fn set_resolution_scale(mut self, scale: Int)
-    external 1013 fn set_coordinate_system(mut self, mode: CoordinateSystemAndOrigin)
+    //external 1009 fn set_resolution_scale(mut self, scale: Int)
+    external 1013 fn set_coordinate_system(mut self, mode: CoordinateSystem)
+    external 1014 fn set_scale_strategy(mut self, mode: ScaleStrategy)
 
     external 1010 fn set_virtual_resolution(mut self, size: Size2)
 

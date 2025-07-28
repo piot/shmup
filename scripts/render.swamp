@@ -154,7 +154,6 @@ impl Render {
     #[host_call]
     fn render(mut self, logic: simulation::Logic, mut gfx: mangrove::render::Gfx) {
         gfx.set_virtual_resolution((SCREEN_WIDTH, SCREEN_HEIGHT))
-        gfx.set_resolution_scale(1)
 
         self.tick += 1
         safe_value = (self.tick % 32000).float()

@@ -18,8 +18,6 @@ fn render(mut assets: mangrove::render::Assets) -> Render {
 #[host_call]
 fn input() -> PlayerInput {
     PlayerInput {
-        mouse_cursor_position: (0, 0),
-        mouse_left_button: false,
-        mouse_right_button: false,
+        ..
     }
 }

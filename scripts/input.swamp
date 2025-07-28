@@ -40,6 +40,7 @@ struct PlayerInput {
 	mouse_cursor_position: (Int, Int),
 	mouse_left_button: Bool,
 	mouse_right_button: Bool,
+    mouse_wheel_line_delta: (Float, Float),
 }
 
 
@@ -49,6 +50,7 @@ impl PlayerInput {
                 mouse_cursor_position: (0, 0),
                 mouse_left_button: false,
                 mouse_right_button: false,
+                ..
             }
     }
 }
