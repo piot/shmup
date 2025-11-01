@@ -39,11 +39,10 @@ struct Shot {
     type: ShotType,
 }
 
-
 struct Player {
     fire: Bool,
     fire_cooldown: Int,
-    assigned_ship_index: SparseId?,
+    assigned_ship_index: ArenaId?,
     direction: Position,
 }
 
@@ -137,12 +136,12 @@ enum PlayerAction {
 
 struct Logic {
     tick_count: Int, /// how many ticks have passed
-    ships: Sparse<Ship; 4>,
-    shots: Sparse<Shot; 64>,
-    enemies: Sparse<Enemy; 64>,
-    explosions: Sparse<Explosion; 64>,
-    score_bonus: Sparse<ScoreBonus; 64>,
-    bonus_items: Sparse<BonusItem; 8>,
+    ships: Arena<Ship; 4>,
+    shots: Arena<Shot; 64>,
+    enemies: Arena<Enemy; 64>,
+    explosions: Arena<Explosion; 64>,
+    score_bonus: Arena<ScoreBonus; 64>,
+    bonus_items: Arena<BonusItem; 8>,
     players: [Int: Player; 4],
     formations: [Int: Formation; 8],
     cooldown_settings: [Int; 3], // just to test arrays
@@ -156,11 +155,11 @@ struct Prnd
 
 impl Prnd {
     fn random_range(value: Float, min: Int, max: Int) -> Int {
-        min + (value.rnd() % (max - min).float()).floor()
+        min + (value.rnd().mod((max - min).float())).floor()
     }
 
     fn random_range_int(value: Int, min: Int, max: Int) -> Int {
-        min + (value.rnd() % (max - min + 1))
+        min + (value.rnd().mod(max - min + 1))
     }
 }
 
@@ -208,10 +207,10 @@ impl Logic {
         true // self.enemies.any(| enemy | enemy.formation == formation)
     }
 
-    fn remove_enemy(mut self, id: SparseId) -> Bool {
+    fn remove_enemy(mut self, id: ArenaId) -> Bool {
         enemy = self.enemies[id]
 
-        _ = self.enemies.remove(id)
+        self.enemies.remove(id)
 
         if self.formations.has(enemy.formation) && !self.has_enemies_in_formation(enemy.formation) {
             self.formations.remove(enemy.formation)
@@ -220,6 +219,7 @@ impl Logic {
             false
         }
     }
+
 
     fn check_shots_vs_enemies(mut self) {
         //self.shots.for(| shot_id, shot | {
@@ -231,12 +231,12 @@ impl Logic {
                         self.shots.remove(shot_id)
                         was_last_in_formation = self.remove_enemy(enemy_id)
                         score_for_enemy = 10
-                        _ = self.explosions.add(Explosion { pos: enemy.rect.pos, tick: 0, type: ExplosionType::Fire })
-                        _ = self.score_bonus.add(ScoreBonus { pos: enemy.rect.pos, tick: 0, score: score_for_enemy })
+                        a = self.explosions.add(Explosion { pos: enemy.rect.pos, tick: 0, type: ExplosionType::Fire })
+                        b = self.score_bonus.add(ScoreBonus { pos: enemy.rect.pos, tick: 0, score: score_for_enemy })
                         self.score += score_for_enemy
                         if was_last_in_formation {
                             enemy_middle = enemy.rect.pos.add(Position { x: 4.0, y: 4.0 })
-                            _ = self.bonus_items.add(BonusItem { pos: enemy_middle } )
+                            c = self.bonus_items.add(BonusItem { pos: enemy_middle } )
                         }
                     }
                 }
@@ -244,21 +244,6 @@ impl Logic {
         }
     }
 
-    // TODO: this too complex and should be simplified
-    fn check_shots_vs_ships(mut self) {
-        self.shots.while (| shot_id, shot | {
-            if shot.faction != Faction::Enemy {
-                true
-            }
-            else
-            {
-                self.ships.while (| ship_id, ship | {
-                    shot_pos = Position { x: shot.x, y: shot.y }
-                    if ship.rect.pos.distance(shot_pos) > 8.0 {
-                        true
-                    } else {
-                        self.shots.remove(shot_id)
-                        self.ships.remove(ship_id)
 
 /*
                         self.players.while(| mut player | {
@@ -275,6 +260,25 @@ impl Logic {
                         })
 */
 
+    // TODO: this too complex and should be simplified
+    fn check_shots_vs_ships(mut self) {
+        /*
+        self.shots.while (| shot_id, shot | {
+            if shot.faction != Faction::Enemy {
+                true
+            }
+            else
+            {
+                self.ships.while (| ship_id, ship | {
+                    shot_pos = Position { x: shot.x, y: shot.y }
+                    if ship.rect.pos.distance(shot_pos) > 8.0 {
+                        true
+                    } else {
+                        self.shots.remove(shot_id)
+                        self.ships.remove(ship_id)
+
+
+
                         _ = self.explosions.add(Explosion { pos: ship.rect.pos, tick: 0, type: ExplosionType::Fire })
 
                         false
@@ -283,6 +287,7 @@ impl Logic {
                false
             }
         })
+        */
     }
 
 
@@ -313,7 +318,7 @@ impl Logic {
             // This is just to show off the guard expression syntax
             | explosion.tick >= 30 -> {
                 self.explosions.remove(explosion_id)
-                }
+            }
             | _ -> {
                 explosion.tick += 1
                 explosion.pos.x += 0.9
@@ -359,7 +364,7 @@ impl Logic {
 
                 ship_id = self.ships.add(ship2) // BUG: Didn't check type
                 print('player assigned to ship: {ship_id}')
-                player.assigned_ship_index = ship_id
+                //player.assigned_ship_index = ship_id
             }
 
             when ship_index = player.assigned_ship_index {
@@ -424,9 +429,10 @@ impl Logic {
         self.enemy_type
     }
 
+
     fn create_formation(mut self) {
         self.formation_id += 1
-        self.formation_id %= self.formations.capacity()
+        self.formation_id = self.formation_id.mod(self.formations.capacity())
         formation_id = self.formation_id
 
         enemy_type = self.next_formation_enemy_type()
@@ -472,11 +478,6 @@ impl Logic {
         }
     }
 
-    // This is not normally how you structure the code
-    // it is just to test mut arguments
-    fn change_cooldown_setting(mut settings: Int, v: Int) {
-        settings = v
-    }
 
     // This is not normally how you structure the code
     // it is just to test mut arguments
@@ -529,10 +530,11 @@ impl Logic {
             self.create_formation()
         }
 
+
         // Update enemies
         // Not a needed `with` statement, but should verify that it works correctly
         with mut formations=&self.formations, mut enemies = &self.enemies {
-            mut enemy_ids_to_remove: Vec<SparseId; 20> = []
+            mut enemy_ids_to_remove: Vec<ArenaId; 20> = []
             for id, mut enemy in enemies {
                 enemy.rect.pos.x += enemy.direction * 1.0
                 enemy.could_be_together.time += 1
@@ -591,7 +593,7 @@ impl Logic {
 
     fn set_player_input_fire(mut self, player_id: Int, fire: Bool) {
         self.players[player_id].fire = fire
-        Logic::change_cooldown_setting(&self.cooldown_settings[ 1 ], 20)
+        self.cooldown_settings[ 1 ] = 20
     }
 
     #[host_call]

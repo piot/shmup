@@ -13,7 +13,7 @@ struct Color {
    g: Float,
    b: Float,
    a: Float,
-}
+} 
 
 impl Color {
     fn new(r: Float, g: Float, b: Float, a: Float) -> Color {
@@ -131,6 +131,7 @@ impl Gfx {
 
     /// Nine slice or nine patch rendering. https://en.wikipedia.org/wiki/9-slice_scaling
     external 1005 fn nine_slice(mut self, position: Pos3, window_size: Size2, material: NineSliceAndMaterialHandle, color: Color)
+    external 1017 fn nine_slice_stretch(mut self, position: Pos3, window_size: Size2, material: NineSliceAndMaterialHandle, color: Color)
 
     external 1006 fn alpha_mask(mut self, position: Pos3, original_image: TextureHandle, mask: TextureHandle, position_within_original_image: UPos2, color: Color)
 

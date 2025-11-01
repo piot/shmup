@@ -1,0 +1,8 @@
+// Hack. Can not return String from Mangrove yet.
+external 4000 fn user_id() -> String<32>
+
+// Hack. Can not return String from Mangrove yet.
+external 4001 fn user_persona_name() -> String<32>
+
+// Hack. Can not return String from Mangrove yet.
+external 4002 fn server_url() -> String<32>

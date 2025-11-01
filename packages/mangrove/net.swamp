@@ -1,0 +1,9 @@
+struct Net {
+    handle: Int,
+}
+
+impl Net {
+    external 3000 fn new(host: String) -> Net
+    external 3001 fn write(mut self, enum_payload: Any)
+    external 3002 fn read(mut self, emum_payload: Any) -> Bool
+}

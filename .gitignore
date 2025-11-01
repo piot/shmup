@@ -1,2 +1,6 @@
 .DS_Store
+./mangrove
+assets/bin/main.swim
 mangrove
+libsteam_api.so
+libsteam_api.dylib

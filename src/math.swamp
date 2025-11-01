@@ -55,7 +55,7 @@ impl Position {
         if magnitude < 0.005 {
             Position { x: 0.0, y: 0.0 }
         } else {
-            Position { x: self.x / magnitude, y: self.y / magnitude }
+            Position { x: self.x.div(magnitude), y: self.y.div(magnitude) }
         }
     }
 

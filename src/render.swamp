@@ -69,7 +69,7 @@ impl Render {
     fn fill_zeroes(s: String, len: Int) -> String {
         mut x = s
         while x.len() < len {
-            x = "0" + x
+            x = '0{x}'
         }
         x
     }
@@ -106,7 +106,7 @@ impl Render {
 
     }
 
-    fn render_score_bonus(self, mut gfx: mangrove::render::Gfx, bonuses: Sparse<simulation::ScoreBonus>) {
+    fn render_score_bonus(self, mut gfx: mangrove::render::Gfx, bonuses: Arena<simulation::ScoreBonus>) {
         for id, bonus in bonuses {
             score_string = Render::fill_zeroes('{bonus.score}', 2)
 
@@ -118,7 +118,7 @@ impl Render {
         }
     }
 
-    fn render_ships(self, mut gfx: mangrove::render::Gfx, ships: Sparse<simulation::Ship>) {
+    fn render_ships(self, mut gfx: mangrove::render::Gfx, ships: Arena<simulation::Ship>) {
         for id, ship in ships {
             ship_pos = (ship.rect.pos.x.floor(), ship.rect.pos.y.floor(), 0)
             ship_frame = match ship.direction.y.sign() {
@@ -219,7 +219,6 @@ impl Render {
                 pulsating_time = enemy.could_be_together.time % 53
                 frame = if pulsating_time < 40  pulsating_time/10  else  0
 
-//                gfx.quad(enemy_pos, (15, 15), Color::new(1.0, 1.0, 0.0, 0.01))
                 match enemy.enemy {
                     Alan -> gfx.sprite_atlas_frame(enemy_pos, self.alan_material, frame),
                     BonBon -> gfx.sprite_atlas_frame(enemy_pos, self.bon_bon_material, frame),
@@ -228,6 +227,7 @@ impl Render {
                 }
             }
         }
+
 
         // Render explosions
         with explosions=logic.explosions, mut gfx=&gfx, mat=self.explosion_material  {
@@ -267,3 +267,4 @@ impl Render {
 fn main(mut assets: mangrove::render::Assets) -> Render {
     Render::new(&assets)
 }
+
