@@ -4,10 +4,10 @@ fn some_utility_function(i: Int) -> Int {
 
 fn some_utility_function2(i: Int) -> Int {
     if false {
-        a = 3
+        a := 3
         4
     } else {
-        a = 5
+        a := 5
         a
     }
 }

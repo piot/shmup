@@ -78,9 +78,9 @@ impl Render {
         shot_pos = (shot.x.floor(), shot.y.floor(), 0)
         match shot.type {
             Tiny -> {
-                normalized = (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
-                shot_power = normalized * 0.8 + 0.2
-                shot_sprite_params = SpriteParams {
+                normalized := (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
+                shot_power := normalized * 0.8 + 0.2
+                shot_sprite_params := SpriteParams {
                     rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, shot_power),
                     ..
@@ -90,10 +90,10 @@ impl Render {
             },
             Magentas -> {
                 // mag_ prefix since it conflicted with Tiny {} scope above
-                mag_normalized = (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
-                mag_shot_power = mag_normalized * 0.8 + 0.2
-                mag_index = (shot.tick / 10) % 2
-                mag_shot_sprite_params = SpriteParams {
+                mag_normalized := (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
+                mag_shot_power := mag_normalized * 0.8 + 0.2
+                mag_index := (shot.tick / 10) % 2
+                mag_shot_sprite_params := SpriteParams {
                     rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, mag_shot_power),
                     ..
@@ -108,11 +108,11 @@ impl Render {
 
     fn render_score_bonus(self, mut gfx: mangrove::render::Gfx, bonuses: Arena<simulation::ScoreBonus>) {
         for id, bonus in bonuses {
-            score_string = Render::fill_zeroes('{bonus.score}', 2)
+            score_string := Render::fill_zeroes('{bonus.score}', 2)
 
-            y_offset = bonus.tick.float() / 2.0
-            pos_3d = (bonus.pos.x.floor(), bonus.pos.y.floor() + y_offset.floor(), 0)
-            power = (20 - bonus.tick).max(0).float() / 30.0
+            y_offset := bonus.tick.float() / 2.0
+            pos_3d := (bonus.pos.x.floor(), bonus.pos.y.floor() + y_offset.floor(), 0)
+            power := (20 - bonus.tick).max(0).float() / 30.0
 
             gfx.text(pos_3d, score_string, self.font_and_material, Color::new(0.5, 0.5, 1.0, power))
         }
@@ -120,8 +120,8 @@ impl Render {
 
     fn render_ships(self, mut gfx: mangrove::render::Gfx, ships: Arena<simulation::Ship>) {
         for id, ship in ships {
-            ship_pos = (ship.rect.pos.x.floor(), ship.rect.pos.y.floor(), 0)
-            ship_frame = match ship.direction.y.sign() {
+            ship_pos := (ship.rect.pos.x.floor(), ship.rect.pos.y.floor(), 0)
+            ship_frame := match ship.direction.y.sign() {
                 1.0 -> 0,
                 -1.0 -> 2,
                 _ -> 1,
@@ -129,7 +129,7 @@ impl Render {
 
             gfx.sprite_atlas_frame_ex(ship_pos, self.player_ship_material, ship_frame, SHIP_SPRITE_PARAMS)
 
-            normalized_x_movement = ship.direction.x.abs() / 0.6
+            normalized_x_movement := ship.direction.x.abs() / 0.6
 
             booster_value: Int? =
                 | ship.direction.x > 0.6 -> 0
@@ -156,24 +156,24 @@ impl Render {
         gfx.set_virtual_resolution((SCREEN_WIDTH, SCREEN_HEIGHT))
 
         self.tick += 1
-        safe_value = (self.tick % 32000).float()
+        safe_value := (self.tick % 32000).float()
 
-        width_factor = (safe_value / 40.0).sin() * 0.5 + 0.5
-        height_factor = (safe_value / 68.0).sin() * 0.5 + 0.5
-        window_x = ((safe_value.floor() / 3) % 500) - 100
+        width_factor := (safe_value / 40.0).sin() * 0.5 + 0.5
+        height_factor := (safe_value / 68.0).sin() * 0.5 + 0.5
+        window_x := ((safe_value.floor() / 3) % 500) - 100
 
-        width =  width_factor * 40.0 + 40.0
-        height = height_factor * 50.0 + 40.0
+        width :=  width_factor * 40.0 + 40.0
+        height := height_factor * 50.0 + 40.0
 
-        offset = -200 + self.tick % 500
-        smaller_offset = -100 + self.tick % 200
+        offset := -200 + self.tick % 500
+        smaller_offset := -100 + self.tick % 200
 
         for i in 0..10 {
-            factor = i.float() * 0.1
+            factor := i.float() * 0.1
 
-            red = factor
-            green = 1.0 - factor
-            blue = 0.5 * factor
+            red := factor
+            green := 1.0 - factor
+            blue := 0.5 * factor
 
             //gfx.quad((offset + 10 + i * 25, smaller_offset + 20 + i * 4, 0), (20, 10 *i),
             //Color::new(red, green, blue, 1.0))
@@ -182,14 +182,14 @@ impl Render {
         //self.render_ships(&gfx, logic.ships)
         // Render score
         with score=logic.score, mut gfx=&gfx, font_mat=self.font_and_material {
-            score_string = Render::fill_zeroes('{score}', 6)
+            score_string := Render::fill_zeroes('{score}', 6)
             gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}',
                font_mat, Color::new(1.0, 0.8, 1.0, 0.5))
         }
 
         // Render scrolling background
         with tick_count=logic.tick_count, mut gfx, mat=self.background_material {
-            background_x = (tick_count.float() * 0.5).floor() % 512
+            background_x := (tick_count.float() * 0.5).floor() % 512
 
             gfx.sprite_ex((0, 0, -100), mat, SpriteParams {
                 color: Color::new(1.0, 1.0, 1.0, 0.5),
@@ -210,14 +210,14 @@ impl Render {
         // Render enemies
         with enemies=logic.enemies, mut gfx=&gfx, self=self {
             for id, enemy in enemies {
-                z = match enemy.enemy {
+                z := match enemy.enemy {
                     Alan -> 1,
                     BonBon -> 2,
                     Lips -> 3,
                 }
-                enemy_pos = (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
-                pulsating_time = enemy.could_be_together.time % 53
-                frame = if pulsating_time < 40  pulsating_time/10  else  0
+                enemy_pos := (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
+                pulsating_time := enemy.could_be_together.time % 53
+                frame := if pulsating_time < 40  pulsating_time/10  else  0
 
                 match enemy.enemy {
                     Alan -> gfx.sprite_atlas_frame(enemy_pos, self.alan_material, frame),
@@ -232,15 +232,15 @@ impl Render {
         // Render explosions
         with explosions=logic.explosions, mut gfx=&gfx, mat=self.explosion_material  {
             for explosion in explosions {
-                explosion_pos = (explosion.pos.x.floor() + 4, explosion.pos.y.floor(), 0)
-                adjusted_time = explosion.tick / 3
+                explosion_pos := (explosion.pos.x.floor() + 4, explosion.pos.y.floor(), 0)
+                adjusted_time := explosion.tick / 3
                 // Explosion animation has 6 frames
                 frame =
                     | adjusted_time < 6 -> adjusted_time
                     | _ -> 5
 
                 power = 1.0 - (explosion.tick.float() / 18.0).min(1.0)
-                explosion_sprite_params = SpriteParams {
+                explosion_sprite_params := SpriteParams {
                     rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, power),
                     ..
@@ -253,9 +253,9 @@ impl Render {
         with bonus_items = logic.bonus_items, mut gfx=&gfx, mat = self.bonus_pickup_material {
             for bonus_item in bonus_items {
                 pivot_x, pivot_y = (-3, -3) // bonus is a bit into the sprite frame
-                bonus_pos =
+                bonus_pos :=
                     (bonus_item.pos.x.floor() + pivot_x, bonus_item.pos.y.floor() + pivot_y, -1)
-                frame = 0
+                frame := 0
 
                 gfx.sprite_atlas_frame(bonus_pos, mat, frame)
             }

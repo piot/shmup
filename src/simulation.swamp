@@ -208,7 +208,7 @@ impl Logic {
     }
 
     fn remove_enemy(mut self, id: ArenaId) -> Bool {
-        enemy = self.enemies[id]
+        enemy := self.enemies[id]
 
         self.enemies.remove(id)
 
@@ -229,10 +229,10 @@ impl Logic {
                     shot_rect = Rect { pos: Position { x: shot.x, y: shot.y }, size: Size { width: 1.0, height: 2.0 } }
                     if enemy.rect.intersects(shot_rect) {
                         self.shots.remove(shot_id)
-                        was_last_in_formation = self.remove_enemy(enemy_id)
-                        score_for_enemy = 10
-                        a = self.explosions.add(Explosion { pos: enemy.rect.pos, tick: 0, type: ExplosionType::Fire })
-                        b = self.score_bonus.add(ScoreBonus { pos: enemy.rect.pos, tick: 0, score: score_for_enemy })
+                        was_last_in_formation := self.remove_enemy(enemy_id)
+                        score_for_enemy := 10
+                        a := self.explosions.add(Explosion { pos: enemy.rect.pos, tick: 0, type: ExplosionType::Fire })
+                        b := self.score_bonus.add(ScoreBonus { pos: enemy.rect.pos, tick: 0, score: score_for_enemy })
                         self.score += score_for_enemy
                         if was_last_in_formation {
                             enemy_middle = enemy.rect.pos.add(Position { x: 4.0, y: 4.0 })
@@ -293,16 +293,16 @@ impl Logic {
 
     fn check_bonus_vs_ships(mut self) {
         for bonus_item_id, bonus_item in self.bonus_items {
-            bonus_item_rect = Rect {
+            bonus_item_rect := Rect {
                 pos: Position { x: bonus_item.pos.x, y: bonus_item.pos.y },
                 size: Size { width: 10.0, height: 10.0 },
             }
 
             self.ships.for(|ship| {
-                ship_middle = Position { x: ship.rect.pos.x + 8.0, y: ship.rect.pos.y + 8.0 }
-                bonus_middle = Position { x: bonus_item_rect.pos.x + 5.0, y: bonus_item_rect.pos.y + 5.0 }
+                ship_middle := Position { x: ship.rect.pos.x + 8.0, y: ship.rect.pos.y + 8.0 }
+                bonus_middle := Position { x: bonus_item_rect.pos.x + 5.0, y: bonus_item_rect.pos.y + 5.0 }
 
-                distance = bonus_middle.distance(ship_middle)
+                distance := bonus_middle.distance(ship_middle)
 
                 if distance <= 9.0 {
                   self.score += 100
@@ -399,9 +399,9 @@ impl Logic {
             if want_to_attack {
                 target_ship = self.closest_ship() // BUG: didn't check return value
                 when target_ship {
-                    direction_to_ship = target_ship.rect.pos.sub(enemy.rect.pos).normalize()
+                    direction_to_ship := target_ship.rect.pos.sub(enemy.rect.pos).normalize()
 
-                    initial_projectile_pos = enemy.rect.pos.add(direction_to_ship.scale(4.0))
+                    initial_projectile_pos := enemy.rect.pos.add(direction_to_ship.scale(4.0))
 
                     _ = self.shots.add(Shot {
                             x: initial_projectile_pos.x,
@@ -435,11 +435,11 @@ impl Logic {
         self.formation_id = self.formation_id.mod(self.formations.capacity())
         formation_id = self.formation_id
 
-        enemy_type = self.next_formation_enemy_type()
+        enemy_type := self.next_formation_enemy_type()
 
         self.formations[formation_id] = Formation { movement: FormationMovement::Sine }
 
-        count_in_formation = Prnd::random_range_int(self.prng_x + self.tick_count, 3, 5)
+        count_in_formation := Prnd::random_range_int(self.prng_x + self.tick_count, 3, 5)
 
         //print('creating formation {formation_id} with {count_in_formation} enemies of type {enemy_type}')
         for offset_index in 0..count_in_formation {
@@ -450,7 +450,7 @@ impl Logic {
                 size: Size { width: 16.0, height: 16.0 }
             }
 
-            direction =
+            direction :=
                 | enemy_type.is_cool() -> -1.8
                 | _ -> -1.0
 
@@ -501,7 +501,7 @@ impl Logic {
 
     fn player_input_to_ship_direction(mut self, player: Player) {
         when ship_index = player.assigned_ship_index {
-            mut ship = self.ships[ship_index]
+            mut ship := self.ships[ship_index]
             ship.direction = player.direction
             self.ships[ship_index] = ship
         } else if player.fire {
@@ -560,7 +560,7 @@ impl Logic {
 
         // Update shots
         with mut shots = &self.shots {
-            screen_rect = Rect {
+            screen_rect := Rect {
                 pos: Position {
                     x: 0.0,
                     y: 10.0,

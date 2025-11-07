@@ -12,7 +12,7 @@ fn simulation() -> Logic {
 fn render(mut assets: mangrove::render::Assets) -> Render {
     Render::new(&assets)
 }
-
+ 
 
 /// Called by the engine at startup to determine the
 /// Input Struct type and default values

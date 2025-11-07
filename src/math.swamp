@@ -44,14 +44,14 @@ impl Position {
     }
 
     fn magnitude(self) -> Float {
-        tuple = (self.x, self.y)
+        tuple := (self.x, self.y)
         //TODO: tuple.magnitude()
         1.0
     }
 
     fn normalize(self) -> Position {
-        tuple = (self.x, self.y)
-        magnitude = 1.0 // TODO: tuple.magnitude()
+        tuple := (self.x, self.y)
+        magnitude := 1.0 // TODO: tuple.magnitude()
         if magnitude < 0.005 {
             Position { x: 0.0, y: 0.0 }
         } else {
@@ -60,10 +60,10 @@ impl Position {
     }
 
     fn distance(self, other: Position) -> Float {
-        x_diff = self.x - other.x
-        y_diff = self.y - other.y
+        x_diff := self.x - other.x
+        y_diff := self.y - other.y
 
-        tuple = (x_diff, y_diff)
+        tuple := (x_diff, y_diff)
         1.0 // TODO: tuple.magnitude()
     }
 
