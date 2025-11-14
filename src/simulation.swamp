@@ -284,9 +284,12 @@ impl Logic {
 
 
     fn closest_ship(self) -> Ship? {
-        self.ships.find(| ship| {
-            true  //HACK: just return the first ship
-        })
+        player := self.players[0]
+        when found = player.assigned_ship_index {
+            self.ships[found]
+        } else {
+            none
+        }
     }
 
     fn create_formation(mut self) {
@@ -410,18 +413,27 @@ impl Logic {
             if want_to_attack {
                 target_ship := self.closest_ship() // BUG: didn't check return value
                 when target_ship {
-                    direction_to_ship := target_ship.rect.pos.sub(enemy.rect.pos).normalize()
+                    if self.shots.len() == 0 {
 
-                    initial_projectile_pos := enemy.rect.pos.add(direction_to_ship.scale(4.0))
+                        target_pos := Position { x: target_ship.rect.pos.x, y:  target_ship.rect.pos.y }
+                        vector_to_ship := target_pos.sub(enemy.rect.pos)
+                        //direction_to_ship := vector_to_ship.direction()
+                        direction_to_ship := vector_to_ship.normalize()
 
-                    self.shots.add(Shot {
-                            x: initial_projectile_pos.x,
-                            y: initial_projectile_pos.y,
-                            direction: direction_to_ship.scale(1.5),
-                            tick: 0,
-                            faction: Faction::Enemy,
-                            type: ShotType::Magentas,
-                        })
+                        initial_projectile_pos := enemy.rect.pos //.add(direction_to_ship.scale(4.0))
+                        scaled_delta_each_tick := direction_to_ship.scale(1.5)
+
+                        print('tick:{self.tick_count}: creating a bullet from {initial_projectile_pos} to target: {target_pos} (delta: {vector_to_ship}) normalized direction: {direction_to_ship}, scaled direction: {scaled_delta_each_tick}')
+
+                        self.shots.add(Shot {
+                                x: initial_projectile_pos.x,
+                                y: initial_projectile_pos.y,
+                                direction: scaled_delta_each_tick ,
+                                tick: 0,
+                                faction: Faction::Enemy,
+                                type: ShotType::Magentas,
+                            })
+                    }
                 }
             }
         }
@@ -444,6 +456,7 @@ impl Logic {
             for shot_id, mut shot in self.shots {
                 shot.x += shot.direction.x
                 shot.y += shot.direction.y
+                print('tick: {self.tick_count}: moved bullet to {shot.x}, {shot.y}')
                 if !screen_rect.contains_xy(shot.x, shot.y) {
                     self.shots.erase(shot_id)
                 }
@@ -501,13 +514,13 @@ impl Logic {
         // Move ships
         {
             for mut ship in self.ships {
-                print('ship.direction: {ship.direction} pos:{ship.rect.pos}')
                 Logic::move_in_x_with_direction(&ship.rect.pos, ship.direction.x)
                 Logic::move_in_y_with_direction(&ship.rect.pos, ship.direction.y)
             }
         }
 
         // Fire ship weapon if possible
+        /*
         {
             for mut ship in self.ships {
                 if ship.weapon.fire_cooldown == 0 { // ship.weapon.wants_to_fire &&
@@ -524,6 +537,7 @@ impl Logic {
 
             }
         }
+        */
 
         // Bonus items should move to the left away
         for bonus_id, mut bonus_item in self.bonus_items {
@@ -548,12 +562,12 @@ impl Logic {
                 ship_middle := Position { x: ship.rect.pos.x + 8.0, y: ship.rect.pos.y + 8.0 }
                 bonus_middle := Position { x: bonus_item_rect.pos.x + 5.0, y: bonus_item_rect.pos.y + 5.0 }
 
-                distance := bonus_middle.distance(ship_middle)
+                scaled_fuzzy_distance := bonus_middle.distance_sqr_scaled(ship_middle)
 
-                if distance <= 32.0 {
+                if scaled_fuzzy_distance <= 8.0 {
                   self.score += 100
                   self.score_bonus.add(ScoreBonus { pos: bonus_item.pos, tick: 0, score: 100 })
-                  print('bonus item picked up. distance: {distance}')
+                  print('bonus item picked up. distance: {scaled_fuzzy_distance}')
                   self.bonus_items.erase(bonus_item_id)
                 }
             })
@@ -579,7 +593,6 @@ impl Logic {
         cur_x, cur_y = input.mouse_cursor_position
         x := (SCREEN_WIDTH_F/2.0 - cur_x.float()) / 2.0
         y := (SCREEN_HEIGHT_F - cur_y.float()) / 2.0
-        print('x: {x} y: {y}')
         for mut ship in self.ships {
             //ship.direction = Position { x: x, y : y }
         }

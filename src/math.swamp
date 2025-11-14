@@ -45,13 +45,37 @@ impl Position {
 
     // returns the distance
     fn distance(self, other: Position) -> Float {
-       (self.x, self.y).magnitude()
+        diff := self.sub(other)
+       (diff.x, diff.y).magnitude()
     }
+
+    // returns a distance value, useful for comparison
+    fn distance_sqr_scaled(self, other: Position) -> Float {
+        diff := self.sub(other)
+        sum := (diff.x, diff.y).magnitude_sqr_scaled()
+        print('sum: {sum}')
+        sum
+    }
+
 
     // returns the normalized vector
     fn normalize(self) -> Position {
         norm_x, norm_y = (self.x, self.y).normalize()
-        { y: norm_x , x: norm_y, }
+        print('normalize {self} -> {norm_x}, {norm_y}')
+        { y: norm_y , x: norm_x, }
+    }
+
+    fn direction(self) -> Position {
+        angle := self.y.atan2(self.x)
+        cos_x := angle.cos()
+        sin_y := angle.sin()
+
+        print('angle: {angle}, x:{cos_x}, y:{sin_y}')
+
+        Position {
+            y: sin_y,
+            x: cos_x,
+        }
     }
 
     fn floor(self) -> Int2 {
