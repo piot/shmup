@@ -1,3 +1,12 @@
 render {
-    enabled false
+    enabled true
+}
+
+simulation {
+    enable true
+    tick true
+}
+
+vm {
+    heap 16MiB
 }

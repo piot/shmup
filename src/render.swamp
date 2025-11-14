@@ -1,4 +1,3 @@
-
 use mangrove::render::*
 
 mod simulation
@@ -35,6 +34,8 @@ struct Render {
 impl Render {
 
     fn new(mut assets: mangrove::render::Assets) -> Render {
+        print('this should be initialized now: {SHIP_TEXTURE_SIZE}')
+
         player_ship_material = assets.frame_fixed_grid_material_png(
             'player/ship_16x16', CELL_SIZE, SHIP_TEXTURE_SIZE)
 
@@ -43,19 +44,19 @@ impl Render {
             player_shot_material: assets.frame_fixed_grid_material_png(
                 'projectiles/player_beam', (8,SIZE), (SIZE*2, SIZE)),
             alan_material: assets.frame_fixed_grid_material_png(
-                'enemies/alan_16x16', CELL_SIZE, (SIZE*6, SIZE)),
+                'enemies/alan_16x16',  (SIZE, SIZE), (SIZE*6, SIZE)),
             bon_bon_material: assets.frame_fixed_grid_material_png(
-                'enemies/bon_bon_16x16', CELL_SIZE, (SIZE*4, SIZE)),
+                'enemies/bon_bon_16x16',  (SIZE, SIZE), (SIZE*4, SIZE)),
             lips_material: assets.frame_fixed_grid_material_png(
-                'enemies/lips_16x16', CELL_SIZE, (SIZE*5, SIZE)),
+                'enemies/lips_16x16',  (SIZE, SIZE), (SIZE*5, SIZE)),
             bonus_pickup_material: assets.frame_fixed_grid_material_png(
-                'items/pickups_16x16', CELL_SIZE, (SIZE*3, SIZE)),
+                'items/pickups_16x16',  (SIZE, SIZE), (SIZE*3, SIZE)),
             explosion_material: assets.frame_fixed_grid_material_png(
-                'effects/explosion_16x16', CELL_SIZE, (SIZE*6, SIZE)),
+                'effects/explosion_16x16',  (SIZE, SIZE), (SIZE*6, SIZE)),
             boosters_material: assets.frame_fixed_grid_material_png(
-                'player/boosters_16x16', CELL_SIZE, (SIZE*2, SIZE)),
+                'player/boosters_16x16',  (SIZE, SIZE), (SIZE*2, SIZE)),
             enemy_projectile: assets.frame_fixed_grid_material_png(
-                'projectiles/enemy_projectile', CELL_SIZE, (SIZE*4, SIZE)),
+                'projectiles/enemy_projectile',  (SIZE, SIZE), (SIZE*4, SIZE)),
             background_material: assets.material_png(
                 'blue_nebula_04-512x512'),
             border_material: assets.material_png(
@@ -78,7 +79,7 @@ impl Render {
         shot_pos = (shot.x.floor(), shot.y.floor(), 0)
         match shot.type {
             Tiny -> {
-                normalized := (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
+                normalized := 1.0 // (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
                 shot_power := normalized * 0.8 + 0.2
                 shot_sprite_params := SpriteParams {
                     rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
@@ -90,7 +91,7 @@ impl Render {
             },
             Magentas -> {
                 // mag_ prefix since it conflicted with Tiny {} scope above
-                mag_normalized := (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
+                mag_normalized := 1.0 // (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
                 mag_shot_power := mag_normalized * 0.8 + 0.2
                 mag_index := (shot.tick / 10) % 2
                 mag_shot_sprite_params := SpriteParams {
@@ -106,7 +107,8 @@ impl Render {
 
     }
 
-    fn render_score_bonus(self, mut gfx: mangrove::render::Gfx, bonuses: Arena<simulation::ScoreBonus>) {
+
+    fn render_score_bonus(self, mut gfx: mangrove::render::Gfx, bonuses: Bag<simulation::ScoreBonus>) {
         for id, bonus in bonuses {
             score_string := Render::fill_zeroes('{bonus.score}', 2)
 
@@ -118,8 +120,45 @@ impl Render {
         }
     }
 
-    fn render_ships(self, mut gfx: mangrove::render::Gfx, ships: Arena<simulation::Ship>) {
-        for id, ship in ships {
+    /// Called by the mangrove engine every render tick
+    #[host_call]
+    fn render(mut self, logic: simulation::Logic, mut gfx: mangrove::render::Gfx) {
+        gfx.set_virtual_resolution((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+        {
+            score_string := Render::fill_zeroes('{logic.score}', 6)
+            gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-37, 0), 'SCORE {score_string}',
+               self.font_and_material, Color::new(1.0, 0.8, 1.0, 0.5))
+        }
+
+
+        for id, enemy in logic.enemies {
+            //print('id:{id}')
+                z := match enemy.enemy {
+                    Alan -> 1,
+                    BonBon -> 2,
+                    Lips -> 3,
+                }
+
+                enemy_pos := (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
+                pulsating_time := enemy.could_be_together.time % 53
+                frame := if pulsating_time < 40  pulsating_time/10  else  0
+
+                match enemy.enemy {
+                    Alan -> gfx.sprite_atlas_frame(enemy_pos, self.alan_material, frame),
+                    BonBon -> gfx.sprite_atlas_frame(enemy_pos, self.bon_bon_material, frame),
+                    Lips -> gfx.sprite_atlas_frame(enemy_pos, self.lips_material, frame),
+                    _ -> {},
+                }
+        }
+
+        // Shots
+        for shot in logic.shots {
+            self.render_shot(&gfx, shot)
+        }
+
+        // Ships
+        for id, ship in logic.ships {
             ship_pos := (ship.rect.pos.x.floor(), ship.rect.pos.y.floor(), 0)
             ship_frame := match ship.direction.y.sign() {
                 1.0 -> 0,
@@ -127,7 +166,12 @@ impl Render {
                 _ -> 1,
             }
 
-            gfx.sprite_atlas_frame_ex(ship_pos, self.player_ship_material, ship_frame, SHIP_SPRITE_PARAMS)
+            params := SpriteParams {
+                rotate: Degrees270,
+                ..
+            }
+
+            gfx.sprite_atlas_frame_ex(ship_pos, self.player_ship_material, ship_frame, params) //SHIP_SPRITE_PARAMS)
 
             normalized_x_movement := ship.direction.x.abs() / 0.6
 
@@ -148,12 +192,55 @@ impl Render {
                 gfx.sprite_atlas_frame_ex(adjusted_pos, self.boosters_material, booster_value, booster_sprite_params)
             }
         }
-    }
 
-    /// Called by the mangrove engine every render tick
-    #[host_call]
-    fn render(mut self, logic: simulation::Logic, mut gfx: mangrove::render::Gfx) {
-        gfx.set_virtual_resolution((SCREEN_WIDTH, SCREEN_HEIGHT))
+        // Render scrolling background
+        with tick_count=logic.tick_count, mut gfx, mat=self.background_material {
+            background_x := (tick_count.float() * 0.5).floor() % 512
+
+            gfx.sprite_ex((0, 0, -100), mat, SpriteParams {
+                color: Color::new(1.0, 1.0, 1.0, 0.5),
+                uv: (background_x, 0),
+                ..
+            })
+        }
+
+        // Explosions
+        // `with` statement not really needed here. mostly for testing
+        with expl = logic.explosions, mut gfx, expl_mat=self.explosion_material {
+            for id, explosion in expl {
+                sprite_x := explosion.pos.x.round()
+                sprite_y := explosion.pos.y.floor()
+                //explosion_pos := (explosion.pos.x.floor() , explosion.pos.y.floor(), 0)
+                explosion_pos := (sprite_x, sprite_y, 20)
+                adjusted_time := explosion.tick * 5 / 40
+                // Explosion animation has 6 frames
+                frame :=
+                    | adjusted_time < 5 -> adjusted_time
+                    | _ -> 4
+                power = 1.0 - (explosion.tick.float() / 30.0).min(1.0)
+                explosion_sprite_params := SpriteParams {
+                    rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
+                    color: Color::new(1.0, 1.0, 1.0, power),
+                    ..
+                }
+                gfx.sprite_atlas_frame_ex(explosion_pos, expl_mat , frame, explosion_sprite_params)
+            }
+        }
+
+
+        for bonus_item in logic.bonus_items {
+            pivot_x, pivot_y = (-3, -3) // bonus is a bit into the sprite frame
+            bonus_pos :=
+                (bonus_item.pos.x.round() + pivot_x, bonus_item.pos.y.round() + pivot_y, -1)
+            frame := 0
+
+            gfx.sprite_atlas_frame(bonus_pos, self.bonus_pickup_material, frame)
+        }
+
+        self.render_score_bonus(&gfx, logic.score_bonus)
+
+
+/*
 
         self.tick += 1
         safe_value := (self.tick % 32000).float()
@@ -179,7 +266,14 @@ impl Render {
             //Color::new(red, green, blue, 1.0))
         }
 
-        //self.render_ships(&gfx, logic.ships)
+        {
+            score_string := Render::fill_zeroes('{logic.score}', 6)
+            gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}',
+               self.font_and_material, Color::new(1.0, 0.8, 1.0, 0.5))
+        }
+
+
+
         // Render score
         with score=logic.score, mut gfx=&gfx, font_mat=self.font_and_material {
             score_string := Render::fill_zeroes('{score}', 6)
@@ -187,18 +281,7 @@ impl Render {
                font_mat, Color::new(1.0, 0.8, 1.0, 0.5))
         }
 
-        // Render scrolling background
-        with tick_count=logic.tick_count, mut gfx, mat=self.background_material {
-            background_x := (tick_count.float() * 0.5).floor() % 512
 
-            gfx.sprite_ex((0, 0, -100), mat, SpriteParams {
-                color: Color::new(1.0, 1.0, 1.0, 0.5),
-                uv: (background_x, 0),
-                ..
-            })
-        }
-
-        self.render_score_bonus(& gfx, logic.score_bonus)
 
         // Render shots
         with shots = logic.shots, mut gfx=&gfx, self {
@@ -260,6 +343,7 @@ impl Render {
                 gfx.sprite_atlas_frame(bonus_pos, mat, frame)
             }
         }
+        */
     }
 }
 
