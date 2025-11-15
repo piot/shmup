@@ -1,7 +1,7 @@
 mod simulation::{Logic, main}
 mod render::{Render}
 mod input::{PlayerInput}
-
+mod audio::{Audio}
 
 #[host_call]
 fn simulation() -> Logic {
@@ -12,7 +12,13 @@ fn simulation() -> Logic {
 fn render(mut assets: mangrove::render::Assets) -> Render {
     Render::new(&assets)
 }
- 
+
+
+#[host_call]
+fn audio(mut assets: mangrove::audio::Assets) -> Audio {
+    Audio::new(&assets)
+}
+
 
 /// Called by the engine at startup to determine the
 /// Input Struct type and default values

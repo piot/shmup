@@ -32,6 +32,7 @@ struct Shot {
     y: Float,
     direction: Position,
     tick: Int,
+    created_at: Int,
     faction: Faction,
     type: ShotType,
 }
@@ -51,6 +52,7 @@ struct Ship {
     rect: Rect,
     direction: Position,
     weapon: Weapon,
+    picked_up_bonus_at: Int,
 }
 
 enum EnemyType {
@@ -106,6 +108,7 @@ enum ExplosionType {
 struct Explosion {
     pos: Position,
     tick: Int,
+    created_at: Int,
     type: ExplosionType,
 }
 
@@ -186,7 +189,6 @@ impl Logic {
         self.enemies.erase(id)
 
         if self.formations.has(enemy.formation) && !self.has_enemies_in_formation(enemy.formation) {
-            print('last in formation. remove formation {enemy.formation} from map')
             self.formations.remove(enemy.formation)
             true
         } else {
@@ -200,7 +202,7 @@ impl Logic {
         was_last_in_formation := self.remove_enemy(id)
         score_for_enemy := 10
         enemy_pos := enemy_position
-        self.explosions.add(Explosion { pos: Position { x: x, y: y }, tick: 0, type: ExplosionType::Fire })
+        self.explosions.add(Explosion { pos: Position { x: x, y: y }, tick: 0, created_at: self.tick_count, type: ExplosionType::Fire })
         self.score_bonus.add(ScoreBonus { pos: Position { x: x, y: y }, tick: 0, score: score_for_enemy })
         self.score += score_for_enemy
         if was_last_in_formation {
@@ -208,43 +210,6 @@ impl Logic {
             self.bonus_items.add(BonusItem { pos: Position { x: enemy_middle.x, y: enemy_middle.y } } )
         }
     }
-
-
-    fn check_shots_vs_enemies(mut self) {
-        //self.shots.for(| shot_id, shot | {
-    }
-
-
-    // TODO: this too complex and should be simplified
-    fn check_shots_vs_ships(mut self) {
-        /*
-        self.shots.while (| shot_id, shot | {
-            if shot.faction != Faction::Enemy {
-                true
-            }
-            else
-            {
-                self.ships.while (| ship_id, ship | {
-                    shot_pos = Position { x: shot.x, y: shot.y }
-                    if ship.rect.pos.distance(shot_pos) > 8.0 {
-                        true
-                    } else {
-                        self.shots.erase(shot_id)
-                        self.ships.remove(ship_id)
-
-
-
-                        _ = self.explosions.add(Explosion { pos: ship.rect.pos, tick: 0, type: ExplosionType::Fire })
-
-                        false
-                    }
-                })
-               false
-            }
-        })
-        */
-   }
-
 
     fn check_player_input(mut self) {
         for mut player in self.players {
@@ -266,6 +231,7 @@ impl Logic {
                     weapon: Weapon {
                         ..
                     }
+                    ..
                 }
 
                 ship_id := self.ships.add(ship) // BUG: Didn't check type
@@ -281,7 +247,6 @@ impl Logic {
             }
         }
     }
-
 
     fn closest_ship(self) -> Ship? {
         player := self.players[0]
@@ -369,7 +334,7 @@ impl Logic {
     #[host_call]
     fn tick(mut self) {
         self.tick_count += 1
-        if self.tick_count % 570_000 == 0 {
+        if self.tick_count % 150_000 == 0 {
             print('tick {self.tick_count}')
         }
 
@@ -381,7 +346,6 @@ impl Logic {
         // Spawn enemies sometime
         if self.tick_count % 201 == 0 { //257 == 0 {
             if self.formations.len() < 2 {
-                print("create formation!!! we are less than four formations")
                self.create_formation()
             } else {
                 //print("we have enough of formations")
@@ -413,27 +377,23 @@ impl Logic {
             if want_to_attack {
                 target_ship := self.closest_ship() // BUG: didn't check return value
                 when target_ship {
-                    if self.shots.len() == 0 {
-
-                        target_pos := Position { x: target_ship.rect.pos.x, y:  target_ship.rect.pos.y }
-                        vector_to_ship := target_pos.sub(enemy.rect.pos)
+                        vector_to_ship := target_ship.rect.pos.sub(enemy.rect.pos)
                         //direction_to_ship := vector_to_ship.direction()
                         direction_to_ship := vector_to_ship.normalize()
 
-                        initial_projectile_pos := enemy.rect.pos //.add(direction_to_ship.scale(4.0))
-                        scaled_delta_each_tick := direction_to_ship.scale(1.5)
+                        initial_projectile_pos := enemy.rect.pos.add(direction_to_ship.scale(4.0))
 
-                        print('tick:{self.tick_count}: creating a bullet from {initial_projectile_pos} to target: {target_pos} (delta: {vector_to_ship}) normalized direction: {direction_to_ship}, scaled direction: {scaled_delta_each_tick}')
+                       // print('tick:{self.tick_count}: creating a bullet from {initial_projectile_pos} to target: {target_pos} (delta: {vector_to_ship}) normalized direction: {direction_to_ship}, scaled direction: {scaled_delta_each_tick}')
 
                         self.shots.add(Shot {
                                 x: initial_projectile_pos.x,
                                 y: initial_projectile_pos.y,
-                                direction: scaled_delta_each_tick ,
+                                direction: direction_to_ship.scale(1.5),
                                 tick: 0,
+                                created_at: self.tick_count,
                                 faction: Faction::Enemy,
                                 type: ShotType::Magentas,
                             })
-                    }
                 }
             }
         }
@@ -456,7 +416,6 @@ impl Logic {
             for shot_id, mut shot in self.shots {
                 shot.x += shot.direction.x
                 shot.y += shot.direction.y
-                print('tick: {self.tick_count}: moved bullet to {shot.x}, {shot.y}')
                 if !screen_rect.contains_xy(shot.x, shot.y) {
                     self.shots.erase(shot_id)
                 }
@@ -465,7 +424,7 @@ impl Logic {
             }
         }
 
-        // Check if shots hit anything
+        // Check if shots hit enemies
         for shot_id, shot in self.shots {
             //print('ERASING SHOT!!!!!: id {shot_id}')
             if shot.faction == Faction::Player {
@@ -483,6 +442,33 @@ impl Logic {
                 }
             }
         }
+
+
+        // Check if shots hits ships
+        self.shots.while(| shot_id, shot | {
+            if shot.faction != Faction::Enemy {
+                true
+            } else {
+                self.ships.while(| ship_id, ship | {
+                    ship_rect := Rect { pos: ship.rect.pos, size: Size { width: 25.0, height: 25.0 } }
+                    print('ship: {ship_rect}')
+                    shot_pos := Position { x: shot.x, y: shot.y }
+                    if !ship_rect.contains(shot_pos) {
+                        true
+                    } else {
+                        self.shots.erase(shot_id)
+                        self.ships.remove(ship_id)
+
+                        self.explosions.add(
+                            { pos: ship.rect.pos, tick: 0, created_at: self.tick_count, type: ExplosionType::Fire }
+                            )
+
+                        false
+                    }
+                })
+               false
+            }
+        })
 
         // === Explosions ===
 
@@ -520,7 +506,6 @@ impl Logic {
         }
 
         // Fire ship weapon if possible
-        /*
         {
             for mut ship in self.ships {
                 if ship.weapon.fire_cooldown == 0 { // ship.weapon.wants_to_fire &&
@@ -530,6 +515,7 @@ impl Logic {
                         y: ship.rect.pos.y + 4.0,
                         direction: Position { x: 8.0, y: 0.0 },
                         tick: 0,
+                        created_at: self.tick_count,
                         faction: Faction::Player,
                         type: ShotType::Tiny,
                     })
@@ -537,16 +523,13 @@ impl Logic {
 
             }
         }
-        */
 
         // Bonus items should move to the left away
         for bonus_id, mut bonus_item in self.bonus_items {
             if bonus_item.pos.x < -30.0 {
-                print('erasing bonus item')
                 self.bonus_items.erase(bonus_id)
             } else {
                 bonus_item.pos.x -= 0.6 //
-                print('move bonus item')
             }
         }
 
@@ -558,7 +541,7 @@ impl Logic {
             }
 
             // this could be done with normal for, but it is to show and test transformers
-            self.ships.for(|ship| {
+            self.ships.for(|mut ship| {
                 ship_middle := Position { x: ship.rect.pos.x + 8.0, y: ship.rect.pos.y + 8.0 }
                 bonus_middle := Position { x: bonus_item_rect.pos.x + 5.0, y: bonus_item_rect.pos.y + 5.0 }
 
@@ -567,8 +550,8 @@ impl Logic {
                 if scaled_fuzzy_distance <= 8.0 {
                   self.score += 100
                   self.score_bonus.add(ScoreBonus { pos: bonus_item.pos, tick: 0, score: 100 })
-                  print('bonus item picked up. distance: {scaled_fuzzy_distance}')
                   self.bonus_items.erase(bonus_item_id)
+                  ship.picked_up_bonus_at = self.tick_count
                 }
             })
         }

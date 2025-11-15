@@ -8,5 +8,5 @@ simulation {
 }
 
 vm {
-    heap 16MiB
+    heap 4MiB
 }

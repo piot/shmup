@@ -53,7 +53,6 @@ impl Position {
     fn distance_sqr_scaled(self, other: Position) -> Float {
         diff := self.sub(other)
         sum := (diff.x, diff.y).magnitude_sqr_scaled()
-        print('sum: {sum}')
         sum
     }
 
@@ -61,7 +60,6 @@ impl Position {
     // returns the normalized vector
     fn normalize(self) -> Position {
         norm_x, norm_y = (self.x, self.y).normalize()
-        print('normalize {self} -> {norm_x}, {norm_y}')
         { y: norm_y , x: norm_x, }
     }
 
@@ -69,8 +67,6 @@ impl Position {
         angle := self.y.atan2(self.x)
         cos_x := angle.cos()
         sin_y := angle.sin()
-
-        print('angle: {angle}, x:{cos_x}, y:{sin_y}')
 
         Position {
             y: sin_y,
