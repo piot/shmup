@@ -7,8 +7,8 @@ struct Assets // Internally has hidden handles to be able to do asset loading
 /// Starts loading the asset specified by the `AssetName` and returns a Handle (small struct) that references that asset
 impl Assets {
     external 7000 fn audio_wav(mut self, name: AssetName) -> AudioHandle
+    external 7001 fn audio_opus(mut self, name: AssetName) -> AudioHandle
 }
-
 
 struct Sfx
 
