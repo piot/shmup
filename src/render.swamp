@@ -79,7 +79,7 @@ impl Render {
         match shot.type {
             Tiny -> {
                 shot_pos = (shot.x.floor() - 4, shot.y.floor() - 1, 0)
-                gfx.quad((shot.x.floor(), shot.y.floor(), 10), (12, 4), Color::new(1.0, 1.0, 0.0, 0.5))
+                //gfx.quad((shot.x.floor(), shot.y.floor(), 10), (12, 4), Color::new(1.0, 1.0, 0.0, 0.5))
                 normalized := 1.0 // (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
                 shot_power := normalized * 0.8 + 0.2
                 shot_sprite_params := SpriteParams {
@@ -92,7 +92,7 @@ impl Render {
             },
             Magentas -> {
                 shot_pos = (shot.x.floor() - 8, shot.y.floor() - 8, 0)
-                gfx.quad((shot.x.floor(), shot.y.floor(), 10), (8, 8), Color::new(1.0, 1.0, 0.0, 0.5))
+                //gfx.quad((shot.x.floor(), shot.y.floor(), 10), (8, 8), Color::new(1.0, 1.0, 0.0, 0.5))
                 // mag_ prefix since it conflicted with Tiny {} scope above
                 mag_normalized := 1.0 // (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
                 mag_shot_power := mag_normalized * 0.8 + 0.2
@@ -162,7 +162,7 @@ impl Render {
         // Ships
         for id, ship in logic.ships {
             ship_pos := (ship.rect.pos.x.floor() - 8, ship.rect.pos.y.floor() - 8, 0) // 8 pixels to center
-            gfx.quad((ship.rect.pos.x.floor(), ship.rect.pos.y.floor(), 20), (5, 5), Color::new(1.0, 1.0, 0.0, 0.8))
+            //gfx.quad((ship.rect.pos.x.floor(), ship.rect.pos.y.floor(), 20), (5, 5), Color::new(1.0, 1.0, 0.0, 0.8))
             ship_frame := match ship.direction.y.sign() {
                 1.0 -> 0,
                 -1.0 -> 2,
@@ -188,7 +188,7 @@ impl Render {
                 x, y = ship_pos
                 adjusted_pos = (x - 15, y, 0)
                 booster_sprite_params = SpriteParams {
-                    rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
+                    rotate: mangrove::render::Rotate::Degrees270, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, normalized_x_movement),
                     ..
                 }

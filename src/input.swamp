@@ -41,6 +41,8 @@ struct PlayerInput {
 	mouse_left_button: Bool,
 	mouse_right_button: Bool,
     mouse_wheel_line_delta: (Float, Float),
+    move: (Float, Float),
+    fire: Bool,
 }
 
 

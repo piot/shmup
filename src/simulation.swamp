@@ -213,12 +213,6 @@ impl Logic {
     fn check_player_input(mut self) {
         for mut player in self.players {
             // HACK: REMOVE THIS LATER
-            player.fire = true
-        }
-
-        for mut player in self.players {
-            // HACK: REMOVE THIS LATER
-            player.fire = true // force the player to join and get a ship
             if self.ships.len() < 1 { // TODO: !player.assigned_ship_index { player.fire && !player.has_ship
                 //print('player pressed fire, they have no ship, lets assign one')
                 ship := Ship {
@@ -238,11 +232,13 @@ impl Logic {
             }
         }
 
-        // Move over player input to ship weapon
+        // Move over player input to ship and ship weapon
         for mut player in self.players {
             when ship_index = player.assigned_ship_index {
                 mut ship = self.ships[ship_index]
                 ship.weapon.wants_to_fire = player.fire
+                ship.direction = player.move_direction
+                self.ships[ship_index] = ship
             }
         }
     }
@@ -373,7 +369,7 @@ impl Logic {
         // === Enemies ===
 
         // Spawn enemies sometime
-        if self.tick_count % 257 == 0 { //257 == 0 {
+        if self.tick_count % 137 == 0 { //257 == 0 {
             if self.formations.len() < 2 {
                self.create_formation()
             } else {
@@ -514,7 +510,7 @@ impl Logic {
         // Fire ship weapon if possible
         {
             for mut ship in self.ships {
-                if ship.weapon.fire_cooldown == 0 { // ship.weapon.wants_to_fire &&
+                if ship.weapon.wants_to_fire && ship.weapon.fire_cooldown == 0 { // ship.weapon.wants_to_fire &&
                     ship.weapon.fire_cooldown = 35 // self.cooldown_settings[ 1 ]
                     self.shots.add( {
                         x: ship.rect.pos.x + 12.0,
@@ -579,11 +575,13 @@ impl Logic {
 
     #[host_call]
 	fn input_changed(mut self, input: PlayerInput) {
-        cur_x, cur_y = input.mouse_cursor_position
-        x := (SCREEN_WIDTH_F/2.0 - cur_x.float()) / 2.0
-        y := (SCREEN_HEIGHT_F - cur_y.float()) / 2.0
-        for mut ship in self.ships {
-            //ship.direction = Position { x: x, y : y }
+        //cur_x, cur_y = input.mouse_cursor_position
+        //x := (SCREEN_WIDTH_F/2.0 - cur_x.float()) / 2.0
+        //y := (SCREEN_HEIGHT_F - cur_y.float()) / 2.0
+        x, y = input.move
+        for mut player in self.players { // FIXME: Hack, it should only take the specific players, not all of them
+            player.move_direction = Position { x: x, y : y }
+            player.fire = input.fire
         }
     }
 }
@@ -592,3 +590,4 @@ impl Logic {
 fn main() -> Logic {
     Logic::new()
 }
+
