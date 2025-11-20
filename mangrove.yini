@@ -1,5 +1,10 @@
 render {
     enabled true
+    mode :windowed{
+        width: 320
+        height: 180
+    }
+    scale 2
 }
 
 simulation {
@@ -10,3 +15,4 @@ simulation {
 vm {
     heap 4MiB
 }
+
