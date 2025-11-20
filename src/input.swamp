@@ -1,10 +1,3 @@
-/// In this version of the engine, you can not change the name of the fields.
-/// In the future, you will be able to have a configuration file that maps the input device controllers to the fields.
-
-/// In this file it is only input that is mapped to input devices. Either from Steam Input API, or from a configuration file.
-
-/// Fengrove provides this input for us. It matches the input from the input API.
-/// If not using steam input, you need to specify the input in a configuration file.
 struct ShipMovement {
     move: (Float, Float),
     fire: Bool,
@@ -13,8 +6,6 @@ struct ShipMovement {
 }
 
 
-/// Fengrove provides this input for us. It matches the input from the input API.
-/// If not using steam input, you need to specify the input in a configuration file.
 struct MenuInput {
     up: Bool,
     down: Bool,
@@ -34,8 +25,6 @@ struct NextPlayerInput {
     sets: ActionSets,
 }
 
-/// In this version of the engine, you can not change the name of the fields.
-/// In the future, you will be able to have a configuration file that maps the input device controllers to the fields.
 struct PlayerInput {
 	mouse_cursor_position: (Int, Int),
 	mouse_left_button: Bool,
@@ -56,8 +45,5 @@ impl PlayerInput {
             }
     }
 }
-
-
-
 
 // TODO: Handle overlays

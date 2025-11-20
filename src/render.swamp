@@ -34,8 +34,6 @@ struct Render {
 impl Render {
 
     fn new(mut assets: mangrove::render::Assets) -> Render {
-        print('this should be initialized now: {SHIP_TEXTURE_SIZE}')
-
         player_ship_material = assets.frame_fixed_grid_material_png(
             'player/ship_16x16', CELL_SIZE, SHIP_TEXTURE_SIZE)
 

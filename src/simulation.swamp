@@ -169,7 +169,6 @@ impl Logic {
         player = Player {
             ..
         }
-        print('created player: {player}')
 
         Logic {
             players: [ 0: player ],
@@ -177,8 +176,6 @@ impl Logic {
             ..
         }
     }
-
-
 
     fn has_enemies_in_formation(self, formation: Int) -> Bool {
         self.enemies.any(| enemy | enemy.formation == formation)
@@ -212,9 +209,7 @@ impl Logic {
 
     fn check_player_input(mut self) {
         for mut player in self.players {
-            // HACK: REMOVE THIS LATER
             if self.ships.len() < 1 { // TODO: !player.assigned_ship_index { player.fire && !player.has_ship
-                //print('player pressed fire, they have no ship, lets assign one')
                 ship := Ship {
                     rect: Rect {
                         pos: Position { x: 40.0, y: 75.0 },
@@ -256,7 +251,6 @@ impl Logic {
         self.formation_id += 1
         capacity := self.formations.capacity()
         self.formation_id = self.formation_id.mod(capacity*2)
-        print('formation created: {self.formation_id} capacity: {capacity}')
         formation_id = self.formation_id
 
         self.enemy_type = match self.enemy_type  {
@@ -294,7 +288,6 @@ impl Logic {
             })
        }
     }
-
 
     // This is not normally how you structure the code
     // it is just to test mut arguments
@@ -349,7 +342,7 @@ impl Logic {
                                 )
 
                             self.shots.erase(shot_id)
-                            self.ships.remove(ship_id) // can't use ship after this point
+                            self.ships.remove(ship_id) // Safety: can't use ship after this point
 
                             false
                         }
@@ -372,8 +365,6 @@ impl Logic {
         if self.tick_count % 137 == 0 { //257 == 0 {
             if self.formations.len() < 2 {
                self.create_formation()
-            } else {
-                //print("we have enough of formations")
             }
         }
 
@@ -390,10 +381,8 @@ impl Logic {
                 self.enemies.erase(id)
                 if self.formations.has(enemy.formation) {
                     // since one got away, the formation is over, so remove it
-                    print('one enemy got away, try to remove formation {enemy.formation}')
                     self.formations.remove(enemy.formation)
                 }
-            } else {
             }
         }
 
@@ -408,8 +397,6 @@ impl Logic {
                         direction_to_ship := vector_to_ship.normalize()
 
                         initial_projectile_pos := enemy.rect.pos.add(direction_to_ship.scale(4.0))
-
-                       // print('tick:{self.tick_count}: creating a bullet from {initial_projectile_pos} to target: {target_pos} (delta: {vector_to_ship}) normalized direction: {direction_to_ship}, scaled direction: {scaled_delta_each_tick}')
 
                         self.shots.add(Shot {
                                 x: initial_projectile_pos.x,
@@ -453,9 +440,7 @@ impl Logic {
         // Check if shots hit enemies
         for shot_id, shot in self.shots {
             shot_rect = Rect { pos: Position { x: shot.x - 2.0, y: shot.y - 2.0 }, size: Size { width: 7.0, height: 5.0 } }
-            //print('ERASING SHOT!!!!!: id {shot_id}')
             if shot.faction == Faction::Player {
-              //  print('shot before: {shot}')
                 for enemy_id, enemy in self.enemies {
                     if enemy.rect.intersects(shot_rect) {
                         // safety: this works, since we can not remove anything that messes up the for loop
@@ -481,7 +466,6 @@ impl Logic {
                 self.explosions.erase(explosion_id)
             }
             | _ -> {
-                //print('explosion {explosion} time: {explosion.tick}')
                 explosion.tick += 1
                 explosion.pos.x += 0.5
             }
@@ -572,7 +556,6 @@ impl Logic {
     }
 
     /// Called by engine
-
     #[host_call]
 	fn input_changed(mut self, input: PlayerInput) {
         //cur_x, cur_y = input.mouse_cursor_position
@@ -590,4 +573,3 @@ impl Logic {
 fn main() -> Logic {
     Logic::new()
 }
-
