@@ -59,7 +59,7 @@ impl Render {
                 'blue_nebula_04-512x512'),
             border_material: assets.material_png(
                 'ui/gui'),
-            font_and_material: assets.bm_font(
+            font_and_material: assets.bm_font_txt(
                 'font/hackman'),
             tick: 0,
         }
@@ -128,7 +128,7 @@ impl Render {
 
         {
             score_string := Render::fill_zeroes('{logic.score}', 6)
-            gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-37, 0), 'SCORE {score_string}',
+            gfx.text((SCREEN_WIDTH-100, SCREEN_HEIGHT-37, 0), 'SCORE {score_string}',
                self.font_and_material, Color::new(1.0, 0.8, 1.0, 0.5))
         }
 
