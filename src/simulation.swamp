@@ -166,7 +166,7 @@ impl Brain {
 
 impl Logic {
     fn new() -> Logic {
-        player = Player {
+        player := Player {
             ..
         }
 
@@ -182,8 +182,9 @@ impl Logic {
     }
 
     fn remove_enemy(mut self, id: Int) -> Bool {
-        enemy := self.enemies[id]
+        enemy := self.enemies[id] // Copy the enemy to a variable for later processing
         self.enemies.erase(id)
+
         if self.formations.has(enemy.formation) && !self.has_enemies_in_formation(enemy.formation) { //  checks if there is a formation book keeping still active
             self.formations.remove(enemy.formation)
             true
@@ -202,7 +203,7 @@ impl Logic {
         self.score_bonus.add(ScoreBonus { pos: Position { x: x, y: y }, tick: 0, score: score_for_enemy })
         self.score += score_for_enemy
         if was_last_in_formation {
-            enemy_middle = enemy_pos.add(Position { x: 4.0, y: 4.0 })
+            enemy_middle := enemy_pos.add(Position { x: 4.0, y: 4.0 })
             self.bonus_items.add(BonusItem { pos: Position { x: enemy_middle.x, y: enemy_middle.y } } )
         }
     }
@@ -227,13 +228,24 @@ impl Logic {
             }
         }
 
-        // Move over player input to ship and ship weapon
+
+
+        // Copy player input to ship and ship weapon
         for mut player in self.players {
             when ship_index = player.assigned_ship_index {
+                /* OLD Version
+
                 mut ship = self.ships[ship_index]
-                ship.weapon.wants_to_fire = player.fire
-                ship.direction = player.move_direction
+                    ship.weapon.wants_to_fire = player.fire
+                    ship.direction = player.move_direction
                 self.ships[ship_index] = ship
+
+                */
+
+                with player, mut ship = &self.ships[ship_index] {
+                    ship.weapon.wants_to_fire = player.fire
+                    ship.direction = player.move_direction
+                }
             }
         }
     }
@@ -322,6 +334,12 @@ impl Logic {
     /// Called by the mangrove engine every logic tick
     #[host_call]
     fn tick(mut self) {
+        self.tick_count += 1
+        if self.tick_count % 150_000 == 0 {
+            print('tick {self.tick_count}')
+        }
+
+
 
             // Check if shots hits ships
             self.shots.while(| shot_id, shot | {
@@ -344,6 +362,7 @@ impl Logic {
                             self.shots.erase(shot_id)
                             self.ships.remove(ship_id) // Safety: can't use ship after this point
 
+
                             false
                         }
                     })
@@ -351,13 +370,10 @@ impl Logic {
                 }
             })
 
-        self.tick_count += 1
-        if self.tick_count % 150_000 == 0 {
-            print('tick {self.tick_count}')
-        }
 
-        // === Players ===
+            // === Players ===
         self.check_player_input()
+
 
         // === Enemies ===
 
@@ -378,17 +394,17 @@ impl Logic {
             enemy.rect.pos.y = enemy.could_be_together.base_y + y
 
             if enemy.rect.pos.x < -32.0 {
-                self.enemies.erase(id)
                 if self.formations.has(enemy.formation) {
                     // since one got away, the formation is over, so remove it
                     self.formations.remove(enemy.formation)
                 }
+                self.enemies.erase(id) // NOTE: enemy binding is invalid after this
             }
         }
 
         // Think
         for id, mut enemy in self.enemies {
-            want_to_attack = enemy.brain.think(enemy.could_be_together.time + self.tick_count + self.prng_x)
+            want_to_attack := enemy.brain.think(enemy.could_be_together.time + self.tick_count + self.prng_x)
             if want_to_attack {
                 target_ship := self.closest_ship() // BUG: didn't check return value
                 when target_ship {
@@ -439,7 +455,7 @@ impl Logic {
 
         // Check if shots hit enemies
         for shot_id, shot in self.shots {
-            shot_rect = Rect { pos: Position { x: shot.x - 2.0, y: shot.y - 2.0 }, size: Size { width: 7.0, height: 5.0 } }
+            shot_rect := Rect { pos: Position { x: shot.x - 2.0, y: shot.y - 2.0 }, size: Size { width: 7.0, height: 5.0 } }
             if shot.faction == Faction::Player {
                 for enemy_id, enemy in self.enemies {
                     if enemy.rect.intersects(shot_rect) {
@@ -553,7 +569,8 @@ impl Logic {
             }
         }
 
-    }
+
+    } // end of tick
 
     /// Called by engine
     #[host_call]
