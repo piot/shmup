@@ -186,6 +186,7 @@ impl Logic {
         self.enemies.erase(id)
 
         if self.formations.has(enemy.formation) && !self.has_enemies_in_formation(enemy.formation) { //  checks if there is a formation book keeping still active
+            print('remove formation because shot: {enemy.formation}')
             self.formations.remove(enemy.formation)
             true
         } else {
@@ -196,9 +197,11 @@ impl Logic {
     fn remove_enemy_and_give_score(mut self, id: Int, enemy_position: Position)  {
         x := enemy_position.x
         y := enemy_position.y
-        was_last_in_formation := self.remove_enemy(id)
+        enemy_pos := enemy_position // this line must be here, before
+
+        was_last_in_formation := self.remove_enemy(id) // Safety: enemy_position is not usable anymore
+
         score_for_enemy := 10
-        enemy_pos := enemy_position
         self.explosions.add(Explosion { pos: Position { x: x, y: y }, tick: 0, created_at: self.tick_count, type: ExplosionType::Fire })
         self.score_bonus.add(ScoreBonus { pos: Position { x: x, y: y }, tick: 0, score: score_for_enemy })
         self.score += score_for_enemy
@@ -209,6 +212,7 @@ impl Logic {
     }
 
     fn check_player_input(mut self) {
+        //print('players: {self.players}')
         for mut player in self.players {
             if self.ships.len() < 1 { // TODO: !player.assigned_ship_index { player.fire && !player.has_ship
                 ship := Ship {
@@ -263,7 +267,9 @@ impl Logic {
         self.formation_id += 1
         capacity := self.formations.capacity()
         self.formation_id = self.formation_id.mod(capacity*2)
-        formation_id = self.formation_id
+        formation_id := self.formation_id
+
+        print('create formation {formation_id}')
 
         self.enemy_type = match self.enemy_type  {
             Alan -> EnemyType::BonBon,
@@ -271,7 +277,9 @@ impl Logic {
             Lips -> EnemyType::Alan,
         }
 
+
         self.formations[formation_id] = Formation { movement: FormationMovement::Sine }
+        assert(self.formations.has(formation_id), 'internal error {formation_id}')
 
         count_in_formation := Prnd::random_range_int(self.prng_x + self.tick_count, 3, 5)
         direction :=
@@ -299,6 +307,7 @@ impl Logic {
                 },
             })
        }
+
     }
 
     // This is not normally how you structure the code
@@ -334,6 +343,52 @@ impl Logic {
     /// Called by the mangrove engine every logic tick
     #[host_call]
     fn tick(mut self) {
+
+                // Move enemies and let them sway
+        for id, mut enemy in self.enemies {
+            enemy.rect.pos.x += enemy.direction * 1.0
+            enemy.could_be_together.time += 1
+            sway_time := enemy.could_be_together.time.float() * 0.02
+            sway_angle := sway_time * 6.28
+            y := sway_angle.cos() * MAGNITUDE
+            enemy.rect.pos.y = enemy.could_be_together.base_y + y
+
+            if enemy.rect.pos.x < -32.0 {
+                if self.formations.has(enemy.formation) {
+                    // since one got away, the formation is over, so remove it
+                    print('remove formation {enemy.formation}')
+                    self.formations.remove(enemy.formation)
+                }
+                self.enemies.erase(id) // NOTE: enemy binding is invalid after this
+            }
+        }
+
+               // Think
+        for id, mut enemy in self.enemies {
+            want_to_attack := enemy.brain.think(enemy.could_be_together.time + self.tick_count + self.prng_x)
+            if want_to_attack {
+                target_ship := self.closest_ship() // BUG: didn't check return value
+                when target_ship {
+                        vector_to_ship := target_ship.rect.pos.sub(enemy.rect.pos)
+                        //direction_to_ship := vector_to_ship.direction()
+                        direction_to_ship := vector_to_ship.normalize()
+
+                        initial_projectile_pos := enemy.rect.pos.add(direction_to_ship.scale(4.0))
+                        self.shots.add(Shot {
+                                x: initial_projectile_pos.x,
+                                y: initial_projectile_pos.y,
+                                direction: direction_to_ship.scale(1.5),
+                                tick: 0,
+                                created_at: self.tick_count,
+                                faction: Faction::Enemy,
+                                type: ShotType::Magentas,
+                            })
+                }
+            }
+        }
+
+
+
         self.tick_count += 1
         if self.tick_count % 150_000 == 0 {
             print('tick {self.tick_count}')
@@ -384,48 +439,9 @@ impl Logic {
             }
         }
 
-        // Move enemies and let them sway
-        for id, mut enemy in self.enemies {
-            enemy.rect.pos.x += enemy.direction * 1.0
-            enemy.could_be_together.time += 1
-            sway_time = enemy.could_be_together.time.float() * 0.02
-            sway_angle = sway_time * 6.28
-            y = sway_angle.cos() * MAGNITUDE
-            enemy.rect.pos.y = enemy.could_be_together.base_y + y
 
-            if enemy.rect.pos.x < -32.0 {
-                if self.formations.has(enemy.formation) {
-                    // since one got away, the formation is over, so remove it
-                    self.formations.remove(enemy.formation)
-                }
-                self.enemies.erase(id) // NOTE: enemy binding is invalid after this
-            }
-        }
 
-        // Think
-        for id, mut enemy in self.enemies {
-            want_to_attack := enemy.brain.think(enemy.could_be_together.time + self.tick_count + self.prng_x)
-            if want_to_attack {
-                target_ship := self.closest_ship() // BUG: didn't check return value
-                when target_ship {
-                        vector_to_ship := target_ship.rect.pos.sub(enemy.rect.pos)
-                        //direction_to_ship := vector_to_ship.direction()
-                        direction_to_ship := vector_to_ship.normalize()
 
-                        initial_projectile_pos := enemy.rect.pos.add(direction_to_ship.scale(4.0))
-
-                        self.shots.add(Shot {
-                                x: initial_projectile_pos.x,
-                                y: initial_projectile_pos.y,
-                                direction: direction_to_ship.scale(1.5),
-                                tick: 0,
-                                created_at: self.tick_count,
-                                faction: Faction::Enemy,
-                                type: ShotType::Magentas,
-                            })
-                }
-            }
-        }
 
 
         // === Shots ===
@@ -579,7 +595,11 @@ impl Logic {
         //x := (SCREEN_WIDTH_F/2.0 - cur_x.float()) / 2.0
         //y := (SCREEN_HEIGHT_F - cur_y.float()) / 2.0
         x, y = input.move
+        pos := Position { x: x, y : y }
+        print('input: {x}, {y}')
+
         for mut player in self.players { // FIXME: Hack, it should only take the specific players, not all of them
+            //print('input: {input}')
             player.move_direction = Position { x: x, y : y }
             player.fire = input.fire
         }

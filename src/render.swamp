@@ -34,7 +34,7 @@ struct Render {
 impl Render {
 
     fn new(mut assets: mangrove::render::Assets) -> Render {
-        player_ship_material = assets.frame_fixed_grid_material_png(
+        player_ship_material := assets.frame_fixed_grid_material_png(
             'player/ship_16x16', CELL_SIZE, SHIP_TEXTURE_SIZE)
 
         Render {
@@ -76,7 +76,7 @@ impl Render {
     fn render_shot(self, mut gfx: mangrove::render::Gfx, shot: simulation::Shot) {
         match shot.type {
             Tiny -> {
-                shot_pos = (shot.x.floor() - 4, shot.y.floor() - 1, 0)
+                shot_pos := (shot.x.floor() - 4, shot.y.floor() - 1, 0)
                 //gfx.quad((shot.x.floor(), shot.y.floor(), 10), (12, 4), Color::new(1.0, 1.0, 0.0, 0.5))
                 normalized := 1.0 // (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
                 shot_power := normalized * 0.8 + 0.2
@@ -89,7 +89,7 @@ impl Render {
                 gfx.sprite_atlas_frame_ex(shot_pos, self.player_shot_material, 1, shot_sprite_params)
             },
             Magentas -> {
-                shot_pos = (shot.x.floor() - 8, shot.y.floor() - 8, 0)
+                shot_pos := (shot.x.floor() - 8, shot.y.floor() - 8, 0)
                 //gfx.quad((shot.x.floor(), shot.y.floor(), 10), (8, 8), Color::new(1.0, 1.0, 0.0, 0.5))
                 // mag_ prefix since it conflicted with Tiny {} scope above
                 mag_normalized := 1.0 // (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
@@ -184,8 +184,8 @@ impl Render {
             // Render boosters
             when booster_value {
                 x, y = ship_pos
-                adjusted_pos = (x - 15, y, 0)
-                booster_sprite_params = SpriteParams {
+                adjusted_pos := (x - 15, y, 0)
+                booster_sprite_params := SpriteParams {
                     rotate: mangrove::render::Rotate::Degrees270, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, normalized_x_movement),
                     ..
@@ -218,7 +218,7 @@ impl Render {
                 frame :=
                     | adjusted_time < 5 -> adjusted_time
                     | _ -> 4
-                power = 1.0 - (explosion.tick.float() / 30.0).min(1.0)
+                power := 1.0 - (explosion.tick.float() / 30.0).min(1.0)
                 explosion_sprite_params := SpriteParams {
                     rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, power),
@@ -241,7 +241,7 @@ impl Render {
         self.render_score_bonus(&gfx, logic.score_bonus)
 
 
-/*
+
 
         self.tick += 1
         safe_value := (self.tick % 32000).float()
@@ -319,11 +319,11 @@ impl Render {
                 explosion_pos := (explosion.pos.x.floor() + 4, explosion.pos.y.floor(), 0)
                 adjusted_time := explosion.tick / 3
                 // Explosion animation has 6 frames
-                frame =
+                frame :=
                     | adjusted_time < 6 -> adjusted_time
                     | _ -> 5
 
-                power = 1.0 - (explosion.tick.float() / 18.0).min(1.0)
+                power := 1.0 - (explosion.tick.float() / 18.0).min(1.0)
                 explosion_sprite_params := SpriteParams {
                     rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
                     color: Color::new(1.0, 1.0, 1.0, power),
@@ -344,7 +344,7 @@ impl Render {
                 gfx.sprite_atlas_frame(bonus_pos, mat, frame)
             }
         }
-        */
+
     }
 }
 
