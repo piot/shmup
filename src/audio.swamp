@@ -12,12 +12,12 @@ struct Audio {
 }
 
 impl Audio {
-    fn new(mut assets: mangrove::audio::Assets) -> Audio {
+    fn new() -> Audio {
         Audio {
-            human_fire: [assets.audio_wav("audio/shot1")],
-            alien_fire: [assets.audio_wav("audio/alien_fire1")],
-            alien_explosion: [assets.audio_wav("audio/alien_explosion1")],
-            human_powerup: [assets.audio_wav("audio/powerup1")],
+            human_fire: [@audio/shot1],
+            alien_fire: [@audio/alien_fire1],
+            alien_explosion: [@audio/alien_explosion1],
+            human_powerup: [@audio/powerup1],
             ..
         }
     }

@@ -1,30 +1,11 @@
-mod simulation::{Logic, main}
+mod simulation::{Logic}
 mod render::{Render}
-mod input::{PlayerInput}
 mod audio::{Audio}
+mod input::{PlayerInput}
 
-#[host_call]
-fn simulation() -> Logic {
-    main()
-}
+// These are compile time allocations, that the engine will use in runtime
 
-#[host_call]
-fn render(mut assets: mangrove::render::Assets) -> Render {
-    Render::new(&assets)
-}
-
-
-#[host_call]
-fn audio(mut assets: mangrove::audio::Assets) -> Audio {
-    Audio::new(&assets)
-}
-
-
-/// Called by the engine at startup to determine the
-/// Input Struct type and default values
-#[host_call]
-fn input() -> PlayerInput {
-    PlayerInput {
-        ..
-    }
-}
+anchor simulation = Logic::new()
+anchor render = Render::new()
+anchor audio = Audio::new()
+anchor input = PlayerInput {..}

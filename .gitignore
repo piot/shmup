@@ -4,3 +4,4 @@ libsteam_api.so
 libsteam_api.dylib
 build/
 temp/
+mangrove.local.yini

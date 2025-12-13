@@ -13,7 +13,7 @@ struct Color {
    g: Float,
    b: Float,
    a: Float,
-} 
+}
 
 impl Color {
     fn new(r: Float, g: Float, b: Float, a: Float) -> Color {
@@ -74,26 +74,30 @@ struct SpriteParams {
 
 impl SpriteParams {
     fn default() -> SpriteParams {
-        SpriteParams { flip_x: false, flip_y: false, rotate: Rotate::Degrees0, color: Color::default(), scale: 1, uv: (0, 0), size: (0, 0) }
+        SpriteParams { rotate: Rotate::Degrees0, scale: 1,.. }
     }
 }
 
 
-/// Has internal hidden handle to the material and other information
-type FontAndMaterialHandle = Int
+
+
+
+struct NineSliceAndMaterial {}
 
 /// Has internal hidden handle to the material, size of frames, and other information
-type FixedAtlasHandle = Int
+type NineSliceAndMaterialHandle = Res<NineSliceAndMaterial>
 
-/// Has internal hidden handle to the material, size of frames, and other information
-type NineSliceAndMaterialHandle = Int
-
-/// Has internal hidden handle to the material and other information
-type MaterialHandle = Int
-
+#[extensions("png", "jpeg", "jpg", "bmp")]
+struct Material {}
 
 /// Has internal hidden handle to the material and other information
-type TextureHandle = Int
+type MaterialHandle = Res<Material>
+
+#[extensions("png", "jpeg", "jpg", "bmp")]
+struct Texture {}
+
+/// Has internal hidden handle to the material and other information
+type TextureHandle = Res<Texture>
 
 
 struct NineSlice {
@@ -113,6 +117,43 @@ enum ScaleStrategy {
     FloatScaling,
 }
 
+
+// ----------- NEW ---------------
+
+struct FontAndMaterial {}
+
+type FontAndMaterialHandle = Res<FontAndMaterial>
+
+impl FontAndMaterialHandle {
+   external 2007 fn text(self, position: Pos3, text: String, color: Color)
+}
+
+
+impl MaterialHandle {
+    external 2000 fn sprite(self, position: Pos3)
+    external 2001 fn sprite_ex(self, position: Pos3, params: SpriteParams)
+}
+
+struct FixedAtlas {
+    grid_size: Size2,
+    material: MaterialHandle,
+}
+
+impl FixedAtlas {
+    external 2002 fn sprite_atlas_frame(self, position: Pos3, frame: Int)
+
+    /// Renders a sprite taken from the specified frame in the atlas, but use the information in the `SpriteParams`
+    external 2003 fn sprite_atlas_frame_ex(self, position: Pos3, frame: Int, params: SpriteParams)
+}
+
+struct Gfx
+
+impl Gfx {
+  external 2010 fn set_virtual_resolution(size: Size2)
+}
+
+// ---------------------------------------------------- Old API ----------------------------------------------------
+/*
 struct Gfx
 
 impl Gfx {
@@ -152,25 +193,4 @@ impl Gfx {
 
     external 1011 fn set_clear_color(mut self, color: Color)
 }
-
-
-struct Slices {
-    left: Int,
-    top: Int,
-    right: Int,
-    bottom: Int,
-}
-
-/// Handles graphical asset loading
-struct Assets // Internally has hidden handles to be able to do asset loading
-
-/// Starts loading the asset specified by the `AssetName` and returns a Handle (small struct) that references that asset
-impl Assets {
-    external 2000 fn material_png(mut self, name: AssetName) -> MaterialHandle
-    external 2001 fn frame_fixed_grid_material_png(mut self, name: AssetName, grid_size: Size2, texture_size: Size2) -> FixedAtlasHandle
-    external 2002 fn nine_slice_material_png(mut self, name: AssetName, slices: Slices) -> NineSliceAndMaterialHandle
-    external 2003 fn texture_png(mut self, image: AssetName) -> TextureHandle
-
-    external 2004 fn bm_font(mut self, name: AssetName) -> FontAndMaterialHandle
-    external 2005 fn bm_font_txt(mut self, name: AssetName) -> FontAndMaterialHandle
-}
+*/

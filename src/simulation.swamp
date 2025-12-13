@@ -183,10 +183,10 @@ impl Logic {
 
     fn remove_enemy(mut self, id: Int) -> Bool {
         enemy := self.enemies[id] // Copy the enemy to a variable for later processing
-        self.enemies.erase(id)
+        //self.enemies.erase(id)
 
         if self.formations.has(enemy.formation) && !self.has_enemies_in_formation(enemy.formation) { //  checks if there is a formation book keeping still active
-            print('remove formation because shot: {enemy.formation}')
+            //print('remove formation because shot: {enemy.formation}')
             self.formations.remove(enemy.formation)
             true
         } else {
@@ -213,6 +213,29 @@ impl Logic {
 
     fn check_player_input(mut self) {
         //print('players: {self.players}')
+
+        // Copy player input to ship and ship weapon
+        for mut player in self.players {
+            when ship_index = player.assigned_ship_index {
+                /* OLD Version
+
+                mut ship = self.ships[ship_index]
+                    ship.weapon.wants_to_fire = player.fire
+                    ship.direction = player.move_direction
+                self.ships[ship_index] = ship
+
+                */
+                //print('player {player} index: {ship_index}')
+
+                with player, mut ship = &self.ships[ship_index] {
+                  //  print('ship: {ship}')
+                    ship.weapon.wants_to_fire = player.fire
+                    ship.direction = player.move_direction
+                }
+            }
+        }
+
+
         for mut player in self.players {
             if self.ships.len() < 1 { // TODO: !player.assigned_ship_index { player.fire && !player.has_ship
                 ship := Ship {
@@ -234,24 +257,6 @@ impl Logic {
 
 
 
-        // Copy player input to ship and ship weapon
-        for mut player in self.players {
-            when ship_index = player.assigned_ship_index {
-                /* OLD Version
-
-                mut ship = self.ships[ship_index]
-                    ship.weapon.wants_to_fire = player.fire
-                    ship.direction = player.move_direction
-                self.ships[ship_index] = ship
-
-                */
-
-                with player, mut ship = &self.ships[ship_index] {
-                    ship.weapon.wants_to_fire = player.fire
-                    ship.direction = player.move_direction
-                }
-            }
-        }
     }
 
     fn closest_ship(self) -> Ship? {
@@ -269,7 +274,7 @@ impl Logic {
         self.formation_id = self.formation_id.mod(capacity*2)
         formation_id := self.formation_id
 
-        print('create formation {formation_id}')
+        //print('create formation {formation_id}')
 
         self.enemy_type = match self.enemy_type  {
             Alan -> EnemyType::BonBon,
@@ -279,7 +284,7 @@ impl Logic {
 
 
         self.formations[formation_id] = Formation { movement: FormationMovement::Sine }
-        assert(self.formations.has(formation_id), 'internal error {formation_id}')
+        //assert(self.formations.has(formation_id), 'internal error {formation_id}')
 
         count_in_formation := Prnd::random_range_int(self.prng_x + self.tick_count, 3, 5)
         direction :=
@@ -343,8 +348,149 @@ impl Logic {
     /// Called by the mangrove engine every logic tick
     #[host_call]
     fn tick(mut self) {
+        // to mark events with a "time"
+        self.tick_count += 1
 
-                // Move enemies and let them sway
+            // Check if shots hit enemies
+        for shot_id, shot in self.shots {
+            //print('check faction {shot}')
+            if shot.faction == Player {
+                //print('shot by player {shot}')
+                shot_rect := Rect { pos: Position { x: shot.x - 2.0, y: shot.y - 2.0 }, size: Size { width: 7.0, height: 5.0 } }
+                for enemy_id, enemy in self.enemies {
+                    if enemy.rect.intersects(shot_rect) {
+                        // safety: this works, since we can not remove anything that messes up the for loop
+                        self.shots.erase(shot_id)
+
+                        // Having a helper function for remove enemy makes sense, since it can happen for multiple reasons
+                        // and from different parts of the code
+                        self.remove_enemy_and_give_score(id:enemy_id, enemy_position:enemy.rect.pos)
+                    }
+                }
+            }
+        }
+
+        for shot_id, shot in self.shots {
+            shot_pos := Position { x: shot.x, y: shot.y }
+
+            for ship_id, ship in self.ships {
+                ship_rect := Rect { pos: Position { x: ship.rect.pos.x - 8.0, y: ship.rect.pos.y - 8.0 }, size: Size { width: 16.0, height: 16.0 } }
+                if ship_rect.contains(shot_pos) {
+                    // print('detect hit: {ship_rect} shot:{shot_pos}')
+                    self.explosions.add(
+                        { pos: ship.rect.pos,
+                            tick: 0,
+                            created_at: self.tick_count,
+                            type: ExplosionType::Fire }
+                        )
+                        self.shots.erase(shot_id) // @safety: shot is unsafe
+
+                        for mut player in self.players {
+                            when player_ship_id = player.assigned_ship_index  {
+                                if player_ship_id == ship_id {
+                                    player.assigned_ship_index = none
+                                }
+                            }
+                        }
+                        self.ships.remove(ship_id) // @safety: ship is unsafe
+                }
+            }
+        }
+
+        // move the shots
+        {
+            screen_rect := Rect {
+                pos: Position {
+                    x: -10.0,
+                    y: 0.0,
+                },
+                size: Size {
+                    width: SCREEN_WIDTH_F,
+                    height: SCREEN_HEIGHT_F,
+                },
+            }
+            // print('screen rect: {screen_rect}')
+            for shot_id, mut shot in self.shots {
+                shot.x += shot.direction.x
+                shot.y += shot.direction.y
+                //print('shot: {shot_id} shot:{shot}')
+                contains := screen_rect.contains_xy(shot.x, shot.y)
+                // print('contains: {contains}')
+                shot.tick += 1
+                if !screen_rect.contains_xy(shot.x, shot.y) {
+                    // print('contains: {contains}, but it told me false?')
+                    // FIXME: currently skips one shot in the iteration
+                    // Safety: `shot` is not useful after this
+                    // print('remove shot!')
+                    self.shots.erase(shot_id)
+                }
+            }
+        }
+
+       // Fire ship weapon if possible
+        {
+            for mut ship in self.ships {
+                if ship.weapon.wants_to_fire && ship.weapon.fire_cooldown == 0 { // ship.weapon.wants_to_fire &&
+                    //print('fire with ship weapon!')
+                    ship.weapon.fire_cooldown = 35 // self.cooldown_settings[ 1 ]
+                    self.shots.add( {
+                        x: ship.rect.pos.x + 12.0,
+                        y: ship.rect.pos.y,
+                        direction: Position { x: 8.0, y: 0.0 },
+                        tick: 0,
+                        created_at: self.tick_count,
+                        faction: Player,
+                        type: Tiny,
+                    })
+                }
+
+            }
+        }
+
+
+
+        // Enemy attack
+        target_ship := self.closest_ship() // BUG: didn't check return value
+        when target_ship {
+            // TODO: should work the other way around
+            // we should determine if it time to shoot at a player
+            // and then select an appropriate enemy to perform the attack
+            for id, mut enemy in self.enemies {
+                want_to_attack := enemy.brain.think(enemy.could_be_together.time + self.tick_count + self.prng_x)
+                if want_to_attack {
+                    vector_to_ship := target_ship.rect.pos.sub(enemy.rect.pos)
+                    direction_to_ship := vector_to_ship.normalize()
+
+                    // print('enemy_shot_direction: {direction_to_ship} ({vector_to_ship})')
+
+                    initial_projectile_pos := enemy.rect.pos.add(direction_to_ship.scale(4.0))
+                    self.shots.add(Shot {
+                            x: initial_projectile_pos.x,
+                            y: initial_projectile_pos.y,
+                            direction: direction_to_ship.scale(1.5),
+                            tick: 0,
+                            created_at: self.tick_count,
+                            faction: Faction::Enemy,
+                            type: ShotType::Magentas,
+                        })
+                }
+            }
+        }
+
+
+        // === Shots ===
+
+
+
+
+
+
+
+
+
+
+
+        // Move enemies and let them sway
         for id, mut enemy in self.enemies {
             enemy.rect.pos.x += enemy.direction * 1.0
             enemy.could_be_together.time += 1
@@ -356,77 +502,21 @@ impl Logic {
             if enemy.rect.pos.x < -32.0 {
                 if self.formations.has(enemy.formation) {
                     // since one got away, the formation is over, so remove it
-                    print('remove formation {enemy.formation}')
+                   // print('remove formation {enemy.formation}')
                     self.formations.remove(enemy.formation)
                 }
                 self.enemies.erase(id) // NOTE: enemy binding is invalid after this
             }
         }
 
-               // Think
-        for id, mut enemy in self.enemies {
-            want_to_attack := enemy.brain.think(enemy.could_be_together.time + self.tick_count + self.prng_x)
-            if want_to_attack {
-                target_ship := self.closest_ship() // BUG: didn't check return value
-                when target_ship {
-                        vector_to_ship := target_ship.rect.pos.sub(enemy.rect.pos)
-                        //direction_to_ship := vector_to_ship.direction()
-                        direction_to_ship := vector_to_ship.normalize()
-
-                        initial_projectile_pos := enemy.rect.pos.add(direction_to_ship.scale(4.0))
-                        self.shots.add(Shot {
-                                x: initial_projectile_pos.x,
-                                y: initial_projectile_pos.y,
-                                direction: direction_to_ship.scale(1.5),
-                                tick: 0,
-                                created_at: self.tick_count,
-                                faction: Faction::Enemy,
-                                type: ShotType::Magentas,
-                            })
-                }
-            }
-        }
-
-
-
-        self.tick_count += 1
         if self.tick_count % 150_000 == 0 {
             print('tick {self.tick_count}')
         }
 
 
 
-            // Check if shots hits ships
-            self.shots.while(| shot_id, shot | {
-                if shot.faction != Faction::Enemy {
-                    true
-                } else {
-                    self.ships.while(| ship_id, ship | {
-                        ship_rect := Rect { pos: Position { x: ship.rect.pos.x - 8.0, y: ship.rect.pos.y - 8.0 }, size: Size { width: 16.0, height: 16.0 } }
-                        shot_pos := Position { x: shot.x, y: shot.y }
-                        if !ship_rect.contains(shot_pos) {
-                            true
-                        } else {
-                            self.explosions.add(
-                                { pos: ship.rect.pos,
-                                    tick: 0,
-                                    created_at: self.tick_count,
-                                    type: ExplosionType::Fire }
-                                )
 
-                            self.shots.erase(shot_id)
-                            self.ships.remove(ship_id) // Safety: can't use ship after this point
-
-
-                            false
-                        }
-                    })
-                    true
-                }
-            })
-
-
-            // === Players ===
+        // === Players ===
         self.check_player_input()
 
 
@@ -442,60 +532,13 @@ impl Logic {
 
 
 
-
-
-        // === Shots ===
-
-        // move the shots
-        {
-            screen_rect := Rect {
-                pos: Position {
-                    x: -10.0,
-                    y: 0.0,
-                },
-                size: Size {
-                    width: SCREEN_WIDTH_F,
-                    height: SCREEN_HEIGHT_F,
-                },
-            }
-            for shot_id, mut shot in self.shots {
-                shot.x += shot.direction.x
-                shot.y += shot.direction.y
-                if !screen_rect.contains_xy(shot.x, shot.y) {
-                    self.shots.erase(shot_id)
-                }
-
-                shot.tick += 1
-            }
-        }
-
-        // Check if shots hit enemies
-        for shot_id, shot in self.shots {
-            shot_rect := Rect { pos: Position { x: shot.x - 2.0, y: shot.y - 2.0 }, size: Size { width: 7.0, height: 5.0 } }
-            if shot.faction == Faction::Player {
-                for enemy_id, enemy in self.enemies {
-                    if enemy.rect.intersects(shot_rect) {
-                        // safety: this works, since we can not remove anything that messes up the for loop
-                        self.shots.erase(shot_id)
-
-                        // Having a helper function for remove enemy makes sense, since it can happen for multiple reasons
-                        // and from different parts of the code
-                        self.remove_enemy_and_give_score(enemy_id, enemy.rect.pos)
-                    }
-                }
-            }
-        }
-
-
-
-
         // === Explosions ===
 
         // increase time
         for explosion_id, mut explosion in self.explosions {
             // This is just to show off the guard expression syntax
             | explosion.tick >= 30 -> {
-                self.explosions.erase(explosion_id)
+                //self.explosions.erase(explosion_id)
             }
             | _ -> {
                 explosion.tick += 1
@@ -523,24 +566,6 @@ impl Logic {
             }
         }
 
-        // Fire ship weapon if possible
-        {
-            for mut ship in self.ships {
-                if ship.weapon.wants_to_fire && ship.weapon.fire_cooldown == 0 { // ship.weapon.wants_to_fire &&
-                    ship.weapon.fire_cooldown = 35 // self.cooldown_settings[ 1 ]
-                    self.shots.add( {
-                        x: ship.rect.pos.x + 12.0,
-                        y: ship.rect.pos.y,
-                        direction: Position { x: 8.0, y: 0.0 },
-                        tick: 0,
-                        created_at: self.tick_count,
-                        faction: Player,
-                        type: Tiny,
-                    })
-                }
-
-            }
-        }
 
         // Bonus items should move to the left away
         for bonus_id, mut bonus_item in self.bonus_items {
@@ -586,17 +611,14 @@ impl Logic {
         }
 
 
+
+
     } // end of tick
 
     /// Called by engine
     #[host_call]
 	fn input_changed(mut self, input: PlayerInput) {
-        //cur_x, cur_y = input.mouse_cursor_position
-        //x := (SCREEN_WIDTH_F/2.0 - cur_x.float()) / 2.0
-        //y := (SCREEN_HEIGHT_F - cur_y.float()) / 2.0
         x, y = input.move
-        pos := Position { x: x, y : y }
-        print('input: {x}, {y}')
 
         for mut player in self.players { // FIXME: Hack, it should only take the specific players, not all of them
             //print('input: {input}')
@@ -604,9 +626,4 @@ impl Logic {
             player.fire = input.fire
         }
     }
-}
-
-/// Called by the engine at startup
-fn main() -> Logic {
-    Logic::new()
 }

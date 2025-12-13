@@ -1,5 +1,6 @@
 render {
-    enabled true
+    enable true
+    tick true
     mode :windowed{
         width: 320
         height: 180
