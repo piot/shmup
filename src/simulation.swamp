@@ -183,7 +183,7 @@ impl Logic {
 
     fn remove_enemy(mut self, id: Int) -> Bool {
         enemy := self.enemies[id] // Copy the enemy to a variable for later processing
-        //self.enemies.erase(id)
+        self.enemies.erase(id)
 
         if self.formations.has(enemy.formation) && !self.has_enemies_in_formation(enemy.formation) { //  checks if there is a formation book keeping still active
             //print('remove formation because shot: {enemy.formation}')
