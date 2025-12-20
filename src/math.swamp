@@ -11,47 +11,47 @@ impl Position {
     }
 
     fn add_mut(mut self, other: Position) {
-        self.x = self.x + other.x
-        self.y = self.y + other.y
+        .x = .x + other.x
+        .y = .y + other.y
     }
 
     fn add(self, other: Position) -> Position {
         Position {
-            x: self.x + other.x,
-            y: self.y + other.y,
+            x: .x + other.x,
+            y: .y + other.y,
         }
     }
 
     fn mul(self, other: Position) -> Position {
         Position {
-            x: self.x * other.x,
-            y: self.y * other.y,
+            x: .x * other.x,
+            y: .y * other.y,
         }
     }
 
     fn scale(self, scalar: Float) -> Position {
         Position {
-            x: self.x * scalar,
-            y: self.y * scalar,
+            x: .x * scalar,
+            y: .y * scalar,
         }
     }
 
     fn sub(self, other: Position) -> Position {
         Position {
-            x: self.x - other.x,
-            y: self.y - other.y,
+            x: .x - other.x,
+            y: .y - other.y,
         }
     }
 
     // returns the distance
     fn distance(self, other: Position) -> Float {
-        diff := self.sub(other)
+        diff := .sub(other)
        (diff.x, diff.y).magnitude()
     }
 
     // returns a distance value, useful for comparison
     fn distance_sqr_scaled(self, other: Position) -> Float {
-        diff := self.sub(other)
+        diff := .sub(other)
         sum := (diff.x, diff.y).magnitude_sqr_scaled()
         sum
     }
@@ -59,12 +59,12 @@ impl Position {
 
     // returns the normalized vector
     fn normalize(self) -> Position {
-        norm_x, norm_y = (self.x, self.y).normalize()
+        norm_x, norm_y = (.x, .y).normalize()
         { y: norm_y , x: norm_x, }
     }
 
     fn direction(self) -> Position {
-        angle := self.y.atan2(self.x)
+        angle := .y.atan2(.x)
         cos_x := angle.cos()
         sin_y := angle.sin()
 
@@ -75,7 +75,7 @@ impl Position {
     }
 
     fn floor(self) -> Int2 {
-        (self.x.floor(), self.y.floor())
+        (.x.floor(), .y.floor())
     }
 }
 
@@ -95,23 +95,23 @@ impl Rect {
     }
 
     fn intersects(self, other: Rect) -> Bool {
-        self.pos.x < other.pos.x + other.size.width &&
-        self.pos.x + self.size.width > other.pos.x &&
-        self.pos.y < other.pos.y + other.size.height &&
-        self.pos.y + self.size.height > other.pos.y
+        .pos.x < other.pos.x + other.size.width &&
+        .pos.x + .size.width > other.pos.x &&
+        .pos.y < other.pos.y + other.size.height &&
+        .pos.y + .size.height > other.pos.y
     }
 
     fn contains(self, other: Position) -> Bool {
-        other.x >= self.pos.x &&
-        other.x <= self.pos.x + self.size.width &&
-        other.y >= self.pos.y &&
-        other.y <= self.pos.y + self.size.height
+        other.x >= .pos.x &&
+        other.x <= .pos.x + .size.width &&
+        other.y >= .pos.y &&
+        other.y <= .pos.y + .size.height
     }
 
     fn contains_xy(self, x: Float, y: Float) -> Bool {
-        x >= self.pos.x &&
-        x <= self.pos.x + self.size.width &&
-        y >= self.pos.y &&
-        y <= self.pos.y + self.size.height
+        x >= .pos.x &&
+        x <= .pos.x + .size.width &&
+        y >= .pos.y &&
+        y <= .pos.y + .size.height
     }
 }

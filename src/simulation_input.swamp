@@ -5,7 +5,7 @@ struct SimInputConverter {
 impl SimInputConverter {
     /// It gets the input from the player and can check the simulation to convert the input to a simulation action.
     fn update(mut self, simulation: simulation::Logic, player_id: Int, input: input::IngameInput) -> simulation::PlayerAction {
-        simulation_player = self.players[player_id]
+        simulation_player = .players[player_id]
 
         when simulation_player {
             IngameResult::ShipAction(ShipAction {

@@ -88,7 +88,7 @@ impl Render {
                     ..
                 }
 
-                self.player_shot_material.sprite_atlas_frame_ex(shot_pos, 1, shot_sprite_params)
+                .player_shot_material.sprite_atlas_frame_ex(shot_pos, 1, shot_sprite_params)
             },
             Magentas -> {
                 shot_pos := (shot.x.floor() - 8, shot.y.floor() - 8, 0)
@@ -103,7 +103,7 @@ impl Render {
                     ..
                 }
 
-                self.enemy_projectile.sprite_atlas_frame_ex(shot_pos, mag_index,
+                .enemy_projectile.sprite_atlas_frame_ex(shot_pos, mag_index,
                     mag_shot_sprite_params)
             }
         }
@@ -118,7 +118,7 @@ impl Render {
 
         {
             score_string := Render::fill_zeroes('{logic.score}', 6)
-            self.font_and_material.text((SCREEN_WIDTH-100, SCREEN_HEIGHT-37, 0), 'SCORE {score_string}',
+            .font_and_material.text((SCREEN_WIDTH-100, SCREEN_HEIGHT-37, 0), 'SCORE {score_string}',
                 Color::new(1.0, 0.8, 1.0, 0.5))
         }
 
@@ -135,9 +135,9 @@ impl Render {
             frame := if pulsating_time < 40  pulsating_time / 10 else 0
 
             material := match enemy.enemy {
-                Alan -> self.alan_material,
-                BonBon -> self.bon_bon_material,
-                Lips -> self.lips_material,
+                Alan -> .alan_material,
+                BonBon -> .bon_bon_material,
+                Lips -> .lips_material,
             }
 
             material.sprite_atlas_frame(enemy_pos, frame)
@@ -145,7 +145,7 @@ impl Render {
 
         // Shots
         for shot in logic.shots {
-            self.render_shot(shot)
+            .render_shot(shot)
         }
 
         // Ships
@@ -164,7 +164,7 @@ impl Render {
                 ..
             }
 
-            self.player_ship_material.sprite_atlas_frame_ex(ship_pos, ship_frame, SHIP_SPRITE_PARAMS)
+            .player_ship_material.sprite_atlas_frame_ex(ship_pos, ship_frame, SHIP_SPRITE_PARAMS)
 
             normalized_x_movement := ship.direction.x.abs() / 0.6
 
@@ -182,12 +182,12 @@ impl Render {
                     color: Color::new(1.0, 1.0, 1.0, normalized_x_movement),
                     ..
                 }
-                //self.boosters_material.sprite_atlas_frame_ex(adjusted_pos,  booster_value, booster_sprite_params)
+                //.boosters_material.sprite_atlas_frame_ex(adjusted_pos,  booster_value, booster_sprite_params)
             }
         }
 
         // Render scrolling background
-        with tick_count=logic.tick_count,  mat=self.background_material {
+        with tick_count=logic.tick_count,  mat=.background_material {
             background_x := (tick_count.float() * 0.5).floor() % 512
 
             mat.sprite_ex((0, 0, -100), SpriteParams {
@@ -199,7 +199,7 @@ impl Render {
 
         // Explosions
         // `with` statement not really needed here. mostly for testing
-        with expl = logic.explosions,  expl_mat=self.explosion_material {
+        with expl = logic.explosions,  expl_mat=.explosion_material {
             for id, explosion in expl {
                 sprite_x := explosion.pos.x.round() - 8
                 sprite_y := explosion.pos.y.floor() - 8
@@ -227,7 +227,7 @@ impl Render {
                 (bonus_item.pos.x.round() + pivot_x, bonus_item.pos.y.round() + pivot_y, -1)
             frame := 0
 
-            self.bonus_pickup_material.sprite_atlas_frame(bonus_pos, frame)
+            .bonus_pickup_material.sprite_atlas_frame(bonus_pos, frame)
         }
 
         // render score bonus
@@ -238,12 +238,12 @@ impl Render {
             pos_3d := (bonus.pos.x.floor(), bonus.pos.y.floor() + y_offset.floor(), 0)
             power := 1.0 // TODO: (20 - bonus.tick).max(0).float() / 30.0
 
-             self.font_and_material.text(pos_3d, score_string, Color::new(0.5, 0.5, 1.0, power))
+            self.font_and_material.text(pos_3d, score_string, Color::new(0.5, 0.5, 1.0, power))
         }
 
 
-        self.tick += 1
-        safe_value := (self.tick % 32000).float()
+        .tick += 1
+        safe_value := (.tick % 32000).float()
 
         width_factor := (safe_value / 40.0).sin() * 0.5 + 0.5
         height_factor := (safe_value / 68.0).sin() * 0.5 + 0.5
@@ -252,8 +252,8 @@ impl Render {
         width :=  width_factor * 40.0 + 40.0
         height := height_factor * 50.0 + 40.0
 
-        offset := -200 + self.tick % 500
-        smaller_offset := -100 + self.tick % 200
+        offset := -200 + .tick % 500
+        smaller_offset := -100 + .tick % 200
 
         for i in 0..10 {
             factor := i.float() * 0.1
@@ -270,14 +270,14 @@ impl Render {
         {
             score_string := Render::fill_zeroes('{logic.score}', 6)
             gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}',
-               self.font_and_material, Color::new(1.0, 0.8, 1.0, 0.5))
+               .font_and_material, Color::new(1.0, 0.8, 1.0, 0.5))
         }
 */
 
 
 /* TODO:
         // Render score
-        with score=logic.score, mut gfx=&gfx, font_mat=self.font_and_material {
+        with score=logic.score, mut gfx=&gfx, font_mat=.font_and_material {
             score_string := Render::fill_zeroes('{score}', 6)
             gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}',
                font_mat, Color::new(1.0, 0.8, 1.0, 0.5))
@@ -289,7 +289,7 @@ impl Render {
         // Render shots
         with shots = logic.shots,  self {
             for shot in shots {
-                self.render_shot(shot)
+                .render_shot(shot)
             }
         }
 
@@ -306,9 +306,9 @@ impl Render {
                 frame := if pulsating_time < 40  pulsating_time/10  else  0
 
                 material := match enemy.enemy {
-                    Alan -> self.alan_material,
-                    BonBon -> self.bon_bon_material,
-                    Lips -> self.lips_material,
+                    Alan -> .alan_material,
+                    BonBon -> .bon_bon_material,
+                    Lips -> .lips_material,
                 }
 
                 material.sprite_atlas_frame(enemy_pos, frame)
@@ -317,7 +317,7 @@ impl Render {
 
 
         // Render explosions
-        with explosions=logic.explosions, mat=self.explosion_material  {
+        with explosions=logic.explosions, mat=.explosion_material  {
             for explosion in explosions {
                 explosion_pos := (explosion.pos.x.floor() + 4, explosion.pos.y.floor(), 0)
                 adjusted_time := explosion.tick / 3
@@ -338,7 +338,7 @@ impl Render {
         }
 
         // Render bonus items
-        with bonus_items = logic.bonus_items, mat = self.bonus_pickup_material {
+        with bonus_items = logic.bonus_items, mat = .bonus_pickup_material {
             for bonus_item in bonus_items {
                 pivot_x, pivot_y = (-3, -3) // bonus is a bit into the sprite frame
                 bonus_pos :=
