@@ -221,6 +221,7 @@ impl Render {
         }
 
 
+        // TODO:Duplicate, which one is best
         for bonus_item in logic.bonus_items {
             pivot_x, pivot_y = (-6, -6) // bonus is a bit into the sprite frame
             bonus_pos :=
@@ -228,6 +229,19 @@ impl Render {
             frame := 0
 
             .bonus_pickup_material.sprite_atlas_frame(bonus_pos, frame)
+        }
+
+        // Render bonus items
+        // TODO:Duplicate, which one is best
+        with bonus_items = logic.bonus_items, mat = .bonus_pickup_material {
+            for bonus_item in bonus_items {
+                pivot_x, pivot_y = (-3, -3) // bonus is a bit into the sprite frame
+                bonus_pos :=
+                    (bonus_item.pos.x.floor() + pivot_x, bonus_item.pos.y.floor() + pivot_y, -1)
+                frame := 0
+
+                mat.sprite_atlas_frame(bonus_pos, frame)
+            }
         }
 
         // render score bonus
@@ -238,7 +252,7 @@ impl Render {
             pos_3d := (bonus.pos.x.floor(), bonus.pos.y.floor() + y_offset.floor(), 0)
             power := 1.0 // TODO: (20 - bonus.tick).max(0).float() / 30.0
 
-            self.font_and_material.text(pos_3d, score_string, Color::new(0.5, 0.5, 1.0, power))
+            .font_and_material.text(pos_3d, score_string, Color::new(0.5, 0.5, 1.0, power))
         }
 
 
@@ -337,17 +351,7 @@ impl Render {
             }
         }
 
-        // Render bonus items
-        with bonus_items = logic.bonus_items, mat = .bonus_pickup_material {
-            for bonus_item in bonus_items {
-                pivot_x, pivot_y = (-3, -3) // bonus is a bit into the sprite frame
-                bonus_pos :=
-                    (bonus_item.pos.x.floor() + pivot_x, bonus_item.pos.y.floor() + pivot_y, -1)
-                frame := 0
 
-                mat.sprite_atlas_frame(bonus_pos, frame)
-            }
-        }
 
     }
 }

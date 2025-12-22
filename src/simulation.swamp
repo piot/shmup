@@ -442,7 +442,7 @@ impl Logic {
                 if ship.weapon.wants_to_fire && ship.weapon.fire_cooldown == 0 { // ship.weapon.wants_to_fire &&
                     //print('fire with ship weapon!')
                     ship.weapon.fire_cooldown = 35 // .cooldown_settings[ 1 ]
-                    self.shots.add( {
+                    .shots.add( {
                         x: ship.rect.pos.x + 12.0,
                         y: ship.rect.pos.y,
                         direction: Position { x: 8.0, y: 0.0 },
