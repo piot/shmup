@@ -1,3 +1,4 @@
+#![api]
 /// Render package. Do not modify this file!
 
 enum Rotate {
