@@ -1,0 +1,7 @@
+type AudioHandle = Res<Int>
+
+struct Sfx
+
+impl Sfx {
+     external 8000 fn trig(mut self, handle: AudioHandle)
+}

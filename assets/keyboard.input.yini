@@ -1,0 +1,18 @@
+bindings {
+     # The action set used for ingame
+    ingame {
+
+        # Move the ship around
+        move {
+            mode :stick
+            keys :wasd
+        }
+
+        # Fire laser
+        fire {
+            mode :button
+            key space
+        }
+
+    }
+}

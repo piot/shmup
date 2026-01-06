@@ -1,0 +1,61 @@
+enum State {
+    Start,
+    MainMenu,
+    Game,
+    GameOver,
+}
+
+/// This is the top level action that can be taken by the local player.
+enum FlowAction {
+    WantsToJoin,
+    MenuAction(MenuAction),
+}
+
+
+enum MenuMove {
+    Nothing,
+    Up,
+    Down,
+    Left,
+    Right,
+ }
+
+ enum MenuAction {
+    Nothing,
+    Select,
+    Back,
+ }
+
+struct MenuAction {
+    move: MenuMove,
+    action: MenuAction,
+}
+
+
+struct Flow {
+
+}
+
+impl Flow {
+
+    fn handle_input(mut self, local_player_id: Int, action: FlowAction) {
+        match action {
+            // Add code here
+        }
+    }
+
+    fn next(mut self, state: State) -> State {
+        match state {
+            Start -> State::MainMenu,
+            MainMenu -> {
+                // mangrove::simulation::start_local(Logic::new())
+                State::Game
+            }
+        }
+    }
+}
+
+
+Flow {
+
+}

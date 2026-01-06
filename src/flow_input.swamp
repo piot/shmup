@@ -1,0 +1,30 @@
+struct FlowInputConverter {
+}
+
+impl FlowInputConverter {
+    /// It gets the input from the player and can check the flow to convert the input to a flow action.
+    fn flow_input_changed(mut self, flow: Flow, local_player_id: Int, menu_input: input::MenuInput) -> flow::FlowAction {
+
+        move =
+            | menu_input.up -> MenuMove::Up
+            | menu_input.down -> MenuMove::Down
+            | menu_input.left -> MenuMove::Left
+            | menu_input.right -> MenuMove::Right
+            | _ -> MenuMove::Nothing
+
+        action =
+            | menu_input.select -> MenuAction::Select
+            | menu_input.back -> MenuAction::Back
+            | _ -> MenuAction::Nothing
+
+        FlowResult::MenuAction(MenuAction {
+            move: move,
+            action: action,
+        })
+    }
+}
+
+
+FlowInputConverter {
+
+}

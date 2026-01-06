@@ -1,0 +1,9 @@
+members [
+    src/
+]
+
+extension swamp
+
+artifact {
+    directory ../assets/bin
+}

@@ -1,0 +1,49 @@
+struct ShipMovement {
+    move: (Float, Float),
+    fire: Bool,
+    secondaryfire: Bool,
+    menu: Bool,
+}
+
+
+struct MenuInput {
+    up: Bool,
+    down: Bool,
+    left: Bool,
+    right: Bool,
+    select: Bool,
+    back: Bool,
+}
+
+
+enum ActionSets {
+    ShipMovement ShipMovement,
+    Menu MenuInput,
+}
+
+struct NextPlayerInput {
+    sets: ActionSets,
+}
+
+struct PlayerInput {
+	mouse_cursor_position: (Int, Int),
+	mouse_left_button: Bool,
+	mouse_right_button: Bool,
+    mouse_wheel_line_delta: (Float, Float),
+    move: (Float, Float),
+    fire: Bool,
+}
+
+
+impl PlayerInput {
+    fn new() -> PlayerInput {
+        PlayerInput {
+                mouse_cursor_position: (0, 0),
+                mouse_left_button: false,
+                mouse_right_button: false,
+                ..
+            }
+    }
+}
+
+// TODO: Handle overlays
