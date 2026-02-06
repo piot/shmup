@@ -1,0 +1,11 @@
+struct Prnd
+
+impl Prnd {
+    fn random_range(value: Float, min: Int, max: Int) -> Int {
+        min + (value.rnd().mod((max - min).float())).floor()
+    }
+
+    fn random_range_int(value: Int, min: Int, max: Int) -> Int {
+        min + (value.rnd().mod(max - min + 1))
+    }
+}

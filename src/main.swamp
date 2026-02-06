@@ -1,0 +1,11 @@
+mod simulation::{Logic}
+mod render::{Render}
+mod audio::{Audio}
+mod input::{PlayerInput}
+
+// These are compile time allocations, that the engine will use in runtime
+
+anchor simulation = Logic::new()
+anchor render = Render::new()
+anchor audio = Audio::new()
+anchor input = PlayerInput {..}

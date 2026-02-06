@@ -1,0 +1,197 @@
+#![api]
+/// Render package. Do not modify this file!
+
+enum Rotate {
+    Degrees0,
+    Degrees90,
+    Degrees180,
+    Degrees270,
+}
+
+/// Represents a color. Only values between 0.0 and 1.0 is allowed
+struct Color {
+   r: Float,
+   g: Float,
+   b: Float,
+   a: Float,
+}
+
+impl Color {
+    fn new(r: Float, g: Float, b: Float, a: Float) -> Color {
+        Color { r:r, g:g, b:b, a:a }
+    }
+
+    fn default() -> Color {
+        Color { r: 1.0, g: 1.0, b: 1.0, a: 1.0 }
+    }
+}
+
+
+type Pos2 = (Int, Int)
+type Pos3 = (Int, Int, Int)
+type Size2 = (Int, Int)
+type UPos2 = (Int, Int)
+type AssetName = String
+
+
+struct URect {
+    position: Pos2,
+    size: Size2,
+}
+
+struct FontInfo {
+    base: Int,
+    line_height: Int,
+    size: Int,
+}
+
+struct AtlasInfo {
+    one_cell_size: Size2,
+    texture_size: Size2,
+}
+
+struct Glyph {
+   id: Int,
+   ch: Char,
+   x: Int,
+   y: Int,
+   width: Int,
+   height: Int,
+   y_offset: Int,
+   x_offset: Int,
+   x_advance: Int,
+}
+
+/// Specific extra parameters that should be used in sprite rendering
+struct SpriteParams {
+  flip_x: Bool, /// flips along x axis
+  flip_y: Bool, /// flips along y axis
+  rotate: Rotate, /// Rotates in 90 degree steps
+  color: Color, /// Color tint
+  scale: Int, /// Integer scaling, should rarely be used since it generally doesn't look good
+  uv: Pos2, /// u,v position in texture
+  size: Size2, /// the size in pixel that it should be expanded to. generally 0,0.
+}
+
+impl SpriteParams {
+    fn default() -> SpriteParams {
+        SpriteParams { rotate: Rotate::Degrees0, scale: 1,.. }
+    }
+}
+
+
+
+
+
+struct NineSliceAndMaterial {}
+
+/// Has internal hidden handle to the material, size of frames, and other information
+type NineSliceAndMaterialHandle = Res<NineSliceAndMaterial>
+
+#[extensions("png", "jpeg", "jpg", "bmp")]
+struct Material {}
+
+/// Has internal hidden handle to the material and other information
+type MaterialHandle = Res<Material>
+
+#[extensions("png", "jpeg", "jpg", "bmp")]
+struct Texture {}
+
+/// Has internal hidden handle to the material and other information
+type TextureHandle = Res<Texture>
+
+
+struct NineSlice {
+    left: Int, // How many pixels from the left side of the texture that will be used in the border
+    top: Int, // How many pixels from the top side of the texture that will be used in the border
+    right: Int,  // How many pixels from the right side of the texture that will be used in the border
+    bottom: Int, // How many pixels from the bottom side of the texture that will be used in the border
+}
+
+enum CoordinateSystem {
+    BottomLeft,
+    TopLeft,
+}
+
+enum ScaleStrategy {
+    IntScaling,
+    FloatScaling,
+}
+
+
+// ----------- NEW ---------------
+
+struct FontAndMaterial {}
+
+type FontAndMaterialHandle = Res<FontAndMaterial>
+
+impl FontAndMaterialHandle {
+   external 2007 fn text(self, position: Pos3, text: String, color: Color)
+}
+
+
+impl MaterialHandle {
+    external 2000 fn sprite(self, position: Pos3)
+    external 2001 fn sprite_ex(self, position: Pos3, params: SpriteParams)
+}
+
+struct FixedAtlas {
+    grid_size: Size2,
+    material: MaterialHandle,
+}
+
+impl FixedAtlas {
+    external 2002 fn sprite_atlas_frame(self, position: Pos3, frame: Int)
+
+    /// Renders a sprite taken from the specified frame in the atlas, but use the information in the `SpriteParams`
+    external 2003 fn sprite_atlas_frame_ex(self, position: Pos3, frame: Int, params: SpriteParams)
+}
+
+struct Gfx
+
+impl Gfx {
+  external 2010 fn set_virtual_resolution(size: Size2)
+}
+
+// ---------------------------------------------------- Old API ----------------------------------------------------
+/*
+struct Gfx
+
+impl Gfx {
+    /// Renders the whole texture in the material at the position. position is the lower left position of the texture.
+    external 1000 fn sprite(mut self, position: Pos3, material: MaterialHandle)
+    /// Renders a sprite according to the parameters in `SpriteParams`
+    external 1001 fn sprite_ex(mut self, position: Pos3, material: MaterialHandle, params: SpriteParams)
+
+    /// Renders a sprite taken from the specified frame in the atlas
+    external 1002 fn sprite_atlas_frame(mut self, position: Pos3, material: FixedAtlasHandle, frame: Int)
+    /// Renders a sprite taken from the specified frame in the atlas, but use the information in the `SpriteParams`
+    external 1003 fn sprite_atlas_frame_ex(mut self, position: Pos3, material: FixedAtlasHandle, frame: Int, params: SpriteParams)
+
+    /// Renders a quad (rectangle), with the specified size and color. position is where the lower left corner of the rectangle is rendered.
+    external 1004 fn quad(mut self, position: Pos3, size: Size2, color: Color)
+
+    /// Nine slice or nine patch rendering. https://en.wikipedia.org/wiki/9-slice_scaling
+    external 1005 fn nine_slice(mut self, position: Pos3, window_size: Size2, material: NineSliceAndMaterialHandle, color: Color)
+    external 1017 fn nine_slice_stretch(mut self, position: Pos3, window_size: Size2, material: NineSliceAndMaterialHandle, color: Color)
+
+    external 1006 fn alpha_mask(mut self, position: Pos3, original_image: TextureHandle, mask: TextureHandle, position_within_original_image: UPos2, color: Color)
+
+    /// Render text with the specified tint. `Color::default()` does not change the color
+    external 1007 fn text(mut self, position: Pos3, text: String, material: FontAndMaterialHandle, color: Color)
+    external 1012 fn text_top(mut self, position: Pos3, text: String, material: FontAndMaterialHandle, color: Color)
+
+    external 1015 fn font_info(self, handle: FontAndMaterialHandle) -> FontInfo?
+    external 1016 fn atlas_info(self, handle: FixedAtlasHandle) -> AtlasInfo
+
+    external 1008 fn text_glyphs(mut self, text: String, material: FontAndMaterialHandle) -> [Glyph]
+
+    //external 1009 fn set_resolution_scale(mut self, scale: Int)
+    external 1013 fn set_coordinate_system(mut self, mode: CoordinateSystem)
+    external 1014 fn set_scale_strategy(mut self, mode: ScaleStrategy)
+
+    external 1010 fn set_virtual_resolution(mut self, size: Size2)
+
+    external 1011 fn set_clear_color(mut self, color: Color)
+}
+*/

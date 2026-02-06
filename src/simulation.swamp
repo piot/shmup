@@ -1,0 +1,613 @@
+mod input::{PlayerInput}
+mod prnd::{Prnd}
+mod math::{
+    Rect,
+    Position,
+    Size,
+}
+
+const SCREEN_HEIGHT = 180
+const SCREEN_HEIGHT_F = 180.float()
+const SCREEN_WIDTH = 320
+const SCREEN_WIDTH_F = 320.float()
+const ENEMY_MARGIN = 20
+const SHIP_Y_MARGIN = 20.0
+const SHIP_X_MARGIN = 20.0
+const MAGNITUDE = 8.0
+const FIRE_COOLDOWN = 43
+
+enum Faction {
+    Player,
+    Enemy,
+}
+
+
+enum ShotType {
+    Tiny,
+    Magentas,
+}
+
+struct Shot {
+    x: Float,
+    y: Float,
+    direction: Position,
+    tick: Int,
+    created_at: Int,
+    faction: Faction,
+    type: ShotType,
+}
+
+struct Player {
+    fire: Bool,
+    assigned_ship_index: PoolId?,
+    move_direction: Position,
+}
+
+struct Weapon {
+    fire_cooldown: Int,
+    wants_to_fire: Bool,
+}
+
+struct Ship {
+    rect: Rect,
+    direction: Position,
+    weapon: Weapon,
+    picked_up_bonus_at: Int,
+}
+
+enum EnemyType {
+    Alan,
+    BonBon,
+    Lips,
+}
+
+impl EnemyType {
+    fn is_cool(self) -> Bool {
+        match self {
+            Alan -> false,
+            BonBon -> true,
+            Lips -> false,
+        }
+    }
+}
+
+struct Waypoints {
+    points: [Position; 8],
+}
+
+enum FormationMovement {
+    Waypoints(Waypoints),
+    Sine,
+}
+
+struct Formation {
+    movement: FormationMovement,
+}
+
+
+struct Brain {
+    time_until_attack: Int,
+}
+
+struct Enemy {
+    rect: Rect,
+    direction: Float,
+    enemy: EnemyType,
+    formation: Int,
+    could_be_together: {
+        time: Int,
+        base_y: Float,
+    },
+    brain: Brain,
+}
+
+enum ExplosionType {
+    Fire, // TODO: add more types
+}
+
+struct Explosion {
+    pos: Position,
+    tick: Int,
+    created_at: Int,
+    type: ExplosionType,
+}
+
+struct ScoreBonus {
+    pos: Position,
+    tick: Int,
+    score: Int,
+}
+
+struct BonusItem {
+    pos: Position,
+}
+
+struct ShipAction {
+    move: (Float, Float),
+    fire: Bool,
+    rockets: Bool,
+}
+
+
+enum PlayerAction {
+    Nothing,
+    ShipAction(ShipAction),
+}
+
+
+struct Logic {
+    enemies: Bag<Enemy; 128>,
+    tick_count: Int, /// how many ticks have passed
+    ships: Pool<Ship; 4>, // Pool is needed because player has an id reference to the ships
+    explosions: Bag<Explosion; 64>,
+    score_bonus: Bag<ScoreBonus; 64>,
+    bonus_items: Bag<BonusItem; 8>,
+    players: [Int: Player; 4],
+    formations: [Int: Formation; 64],
+    cooldown_settings: [Int; 3], // just to test arrays
+    score: Int,
+    formation_id: Int,
+    enemy_type: EnemyType,
+    prng_x: Int,
+    shots: Bag<Shot; 128>,
+}
+
+impl Brain {
+    fn think(mut self, rand_influence: Int) -> Bool {
+        if .time_until_attack > 0 {
+            .time_until_attack -= 1
+            false
+        } else {
+            .time_until_attack = Prnd::random_range_int(rand_influence, 200, 400)
+            true
+        }
+    }
+}
+
+impl Logic {
+    fn new() -> Logic {
+        player := Player {
+            ..
+        }
+
+        Logic {
+            players: [ 0: player ],
+            cooldown_settings: [ 10, FIRE_COOLDOWN, 30 ],
+            ..
+        }
+    }
+
+    fn has_enemies_in_formation(self, formation: Int) -> Bool {
+        .enemies.any(| enemy | enemy.formation == formation)
+    }
+
+    fn remove_enemy(mut self, id: Int) -> Bool {
+        enemy := .enemies[id] // Copy the enemy to a variable for later processing
+        .enemies.erase(id)
+
+        if .formations.has(enemy.formation) && !.has_enemies_in_formation(enemy.formation) { //  checks if there is a formation book keeping still active
+            //print('remove formation because shot: {enemy.formation}')
+            .formations.remove(enemy.formation)
+            true
+        } else {
+            false
+        }
+    }
+
+    fn remove_enemy_and_give_score(mut self, id: Int, enemy_position: Position)  {
+        x := enemy_position.x
+        y := enemy_position.y
+        enemy_pos := enemy_position // this line must be here, before
+
+        was_last_in_formation := .remove_enemy(id) // Safety: enemy_position is not usable anymore
+
+        score_for_enemy := 10
+        .explosions.add( { pos: { x: x, y: y }, tick: 0, created_at: .tick_count, type: Fire })
+        .score_bonus.add( { pos: { x: x, y: y }, tick: 0, score: score_for_enemy })
+        .score += score_for_enemy
+        if was_last_in_formation {
+            enemy_middle := enemy_pos.add({ x: 4.0, y: 4.0 })
+            .bonus_items.add({ pos: { x: enemy_middle.x, y: enemy_middle.y } } )
+        }
+    }
+
+    fn check_player_input(mut self) {
+        //print('players: {.players}')
+
+        // Copy player input to ship and ship weapon
+        for mut player in .players {
+            when ship_index = player.assigned_ship_index {
+                /* OLD Version
+
+                mut ship = .ships[ship_index]
+                    ship.weapon.wants_to_fire = player.fire
+                    ship.direction = player.move_direction
+                .ships[ship_index] = ship
+
+                */
+                //print('player {player} index: {ship_index}')
+
+                with mut ship = &.ships[ship_index] {
+                  //  print('ship: {ship}')
+                    ship.weapon.wants_to_fire = player.fire
+                    ship.direction = player.move_direction
+                }
+            }
+        }
+
+
+        for mut player in .players {
+            if .ships.len() < 1 { // TODO: !player.assigned_ship_index { player.fire && !player.has_ship
+                ship_id := .ships.add(
+                    {
+                        rect: {
+                            pos: { x: 40.0, y: 75.0 },
+                            size: { width: 16.0, height: 16.0 },
+                        },
+                        direction: { x: 0.0, y: 0.0 },
+                        ..
+                    }
+                )
+
+                player.assigned_ship_index = ship_id
+            }
+        }
+    }
+
+    fn closest_ship(self) -> Ship? {
+        player := .players[0]
+        when found = player.assigned_ship_index {
+            .ships[found]
+        } else {
+            none
+        }
+    }
+
+    fn create_formation(mut self) {
+        .formation_id += 1
+        capacity := .formations.capacity()
+        .formation_id = .formation_id.mod(capacity*2)
+        formation_id := .formation_id
+
+        //print('create formation {formation_id}')
+
+        .enemy_type = match .enemy_type  {
+            Alan -> BonBon,
+            BonBon -> Lips,
+            Lips -> Alan,
+        }
+
+
+        .formations[formation_id] = { movement: Sine }
+        //assert(.formations.has(formation_id), 'internal error {formation_id}')
+
+        count_in_formation := Prnd::random_range_int(.prng_x + .tick_count, 3, 5)
+        direction :=
+            | .enemy_type.is_cool() -> -1.8
+            | _ -> -1.0
+
+        for offset_index in 0..count_in_formation {
+            random_y := Prnd::random_range_int(.tick_count, ENEMY_MARGIN, SCREEN_HEIGHT - ENEMY_MARGIN)
+
+            x_offset := offset_index * 32
+
+            rect := Rect {
+                pos: Position { x: SCREEN_WIDTH.float() + 2.0 + x_offset.float(), y: random_y.float() },
+                size: Size { width: 16.0, height: 16.0 }
+            }
+
+            .enemies.add({
+                rect: rect,
+                could_be_together: { time: x_offset, base_y: rect.pos.y },
+                enemy: .enemy_type,
+                direction: direction,
+                formation: formation_id,
+                brain: Brain {
+                    time_until_attack: Prnd::random_range_int(.prng_x + .tick_count + x_offset, 100, 500)
+                },
+            })
+       }
+
+    }
+
+    // This is not normally how you structure the code
+    // it is just to test mut arguments
+    fn move_in_y_with_direction(mut position: Position, direction: Float) {
+        position.y += direction
+        max_y := SCREEN_HEIGHT_F - SHIP_Y_MARGIN
+        if position.y < 10.0  position.y = 10.0
+        if position.y > 200.0  position.y = 200.0
+        position.y = position.y.clamp(SHIP_Y_MARGIN, max_y)
+    }
+
+    fn move_in_x_with_direction(mut position: Position, direction: Float) {
+        position.x += direction * 1.3
+        if position.x < 10.0  position.x = 10.0
+        if position.x > 200.0  position.x = 200.0
+        max_x :=  SCREEN_WIDTH_F - SHIP_X_MARGIN
+        position.x = position.x.clamp(SHIP_X_MARGIN, max_x) //)
+    }
+
+    fn player_input_to_ship_direction(mut self, player: Player) {
+        when ship_index = player.assigned_ship_index {
+            mut ship := .ships[ship_index]
+            ship.direction = player.move_direction
+            .ships[ship_index] = ship
+        } else if player.fire {
+            // print('ship not assigned yet, press fire to assign')
+        } else {
+            // print('ship not assigned yet, press fire to assign')
+        }
+    }
+
+    /// Called by the mangrove engine every logic tick
+    #[host_call]
+    fn tick(mut self, input: PlayerInput) {
+
+        input_x, input_y = input.move
+
+        for mut player in .players { // FIXME: Hack, it should only take the specific players, not all of them
+            //print('input: {input}')
+            player.move_direction = { x: input_x, y : input_y }
+            player.fire = input.fire
+        }
+
+        // to mark events with a "time"
+        .tick_count += 1
+
+        // Check if shots hit enemies
+        for shot_id, shot in .shots {
+            if shot.faction != Player {
+                continue
+            }
+            //print('check faction {shot}')
+                //print('shot by player {shot}')
+            shot_rect := Rect { pos: { x: shot.x - 2.0, y: shot.y - 2.0 }, size: { width: 7.0, height: 5.0 } }
+            for enemy_id, enemy in .enemies {
+                if enemy.rect.intersects(shot_rect) {
+                    // safety: this works, since we can not remove anything that messes up the for loop
+                    .shots.erase(shot_id)
+
+                    // Having a helper function for remove enemy makes sense, since it can happen for multiple reasons
+                    // and from different parts of the code
+                    .remove_enemy_and_give_score(id:enemy_id, enemy_position:enemy.rect.pos)
+                }
+            }
+        }
+
+        for shot_id, shot in .shots {
+            shot_pos := Position { x: shot.x, y: shot.y }
+
+            for ship_id, ship in .ships {
+                ship_rect := Rect {
+                    pos: { x: ship.rect.pos.x - 8.0, y: ship.rect.pos.y - 8.0 },
+                    size: { width: 16.0, height: 16.0 }
+                }
+
+                if ship_rect.contains(shot_pos) {
+                    // print('detect hit: {ship_rect} shot:{shot_pos}')
+                    .explosions.add(
+                    {
+                        pos: ship.rect.pos,
+                        tick: 0,
+                        created_at: .tick_count,
+                        type: Fire
+                    })
+
+                    .shots.erase(shot_id) // @safety: shot is unsafe
+
+                    for mut player in .players {
+                        when player_ship_id = player.assigned_ship_index  {
+                            if player_ship_id == ship_id {
+                                player.assigned_ship_index = none
+                            }
+                        }
+                    }
+                    .ships.remove(ship_id) // @safety: ship is unsafe
+                }
+            }
+        }
+
+        // move the shots
+        {
+            screen_rect := Rect {
+                pos: {
+                    x: -10.0,
+                    y: 0.0,
+                },
+                size: {
+                    width: SCREEN_WIDTH_F,
+                    height: SCREEN_HEIGHT_F,
+                },
+            }
+            // print('screen rect: {screen_rect}')
+            for shot_id, mut shot in .shots {
+                shot.x += shot.direction.x
+                shot.y += shot.direction.y
+                //print('shot: {shot_id} shot:{shot}')
+                // print('contains: {contains}')
+                shot.tick += 1
+                if !screen_rect.contains_xy(shot.x, shot.y) {
+                    // print('contains: {contains}, but it told me false?')
+                    // FIXME: currently skips one shot in the iteration
+                    // Safety: `shot` is not useful after this
+                    // print('remove shot!')
+                    .shots.erase(shot_id)
+                }
+            }
+        }
+
+       // Fire ship weapon if possible
+        {
+            for mut ship in .ships {
+                if !ship.weapon.wants_to_fire || ship.weapon.fire_cooldown != 0 {
+                    continue
+                }
+                //print('fire with ship weapon!')
+                ship.weapon.fire_cooldown = 35 // .cooldown_settings[ 1 ]
+                .shots.add( {
+                    x: ship.rect.pos.x + 12.0,
+                    y: ship.rect.pos.y,
+                    direction: { x: 8.0, y: 0.0 },
+                    tick: 0,
+                    created_at: .tick_count,
+                    faction: Player,
+                    type: Tiny,
+                })
+            }
+        }
+
+
+
+        // Enemy attack
+        target_ship := .closest_ship() // BUG: didn't check return value
+        when target_ship {
+            // TODO: should work the other way around
+            // we should determine if it time to shoot at a player
+            // and then select an appropriate enemy to perform the attack
+            for id, mut enemy in .enemies {
+                want_to_attack := enemy.brain.think(enemy.could_be_together.time + .tick_count + .prng_x)
+                if !want_to_attack {
+                    continue
+                }
+
+                vector_to_ship := target_ship.rect.pos.sub(enemy.rect.pos)
+                direction_to_ship := vector_to_ship.normalize()
+
+                // print('enemy_shot_direction: {direction_to_ship} ({vector_to_ship})')
+
+                initial_projectile_pos := enemy.rect.pos.add(direction_to_ship.scale(4.0))
+                .shots.add(Shot {
+                        x: initial_projectile_pos.x,
+                        y: initial_projectile_pos.y,
+                        direction: direction_to_ship.scale(1.5),
+                        tick: 0,
+                        created_at: .tick_count,
+                        faction: Enemy,
+                        type: Magentas,
+                    })
+            }
+        }
+
+
+        // === Shots ===
+
+
+        // Move enemies and let them sway
+        for id, mut enemy in .enemies {
+            enemy.rect.pos.x += enemy.direction * 1.0
+            enemy.could_be_together.time += 1
+            sway_time := enemy.could_be_together.time.float() * 0.02
+            sway_angle := sway_time * 6.28
+            y := sway_angle.cos() * MAGNITUDE
+            enemy.rect.pos.y = enemy.could_be_together.base_y + y
+
+            if enemy.rect.pos.x < -32.0 {
+                if .formations.has(enemy.formation) {
+                    // since one got away, the formation is over, so remove it
+                   // print('remove formation {enemy.formation}')
+                    .formations.remove(enemy.formation)
+                }
+                .enemies.erase(id) // NOTE: enemy binding is invalid after this
+            }
+        }
+
+        if .tick_count % 150_000 == 0 {
+            print('tick {.tick_count}')
+        }
+
+
+        // === Players ===
+        .check_player_input()
+
+
+        // === Enemies ===
+
+        // Spawn enemies sometime
+        if .tick_count % 137 == 0 { //257 == 0 {
+            if .formations.len() < 2 {
+               .create_formation()
+            }
+        }
+
+
+        // === Explosions ===
+
+        // increase time
+        for explosion_id, mut explosion in .explosions {
+            // This is just to show off the guard expression syntax
+            | explosion.tick >= 30 -> {
+                //.explosions.erase(explosion_id)
+            }
+            | _ -> {
+                explosion.tick += 1
+                explosion.pos.x += 0.5
+            }
+        }
+
+        // === Ships ===
+
+        // === Ship Weapons ===
+        // Cooldown for the weapon.
+        {
+            for mut ship in .ships {
+                if ship.weapon.fire_cooldown > 0 {
+                    ship.weapon.fire_cooldown -= 1
+                }
+            }
+        }
+
+        // Move ships
+        {
+            for mut ship in .ships {
+                Logic::move_in_x_with_direction(&ship.rect.pos, ship.direction.x)
+                Logic::move_in_y_with_direction(&ship.rect.pos, ship.direction.y)
+            }
+        }
+
+
+        // Bonus items should move to the left away
+        for bonus_id, mut bonus_item in .bonus_items {
+            if bonus_item.pos.x < -30.0 {
+                .bonus_items.erase(bonus_id)
+            } else {
+                bonus_item.pos.x -= 0.6 //
+            }
+        }
+
+        // Check if ship picks up bonus
+        for bonus_item_id, bonus_item in .bonus_items {
+            bonus_item_rect := Rect {
+                pos: Position { x: bonus_item.pos.x, y: bonus_item.pos.y },
+                size: Size { width: 10.0, height: 10.0 },
+            }
+
+            // this could be done with normal for, but it is to show and test transformers
+            .ships.for(|mut ship| {
+                ship_middle := Position { x: ship.rect.pos.x, y: ship.rect.pos.y  }
+                bonus_middle := Position { x: bonus_item_rect.pos.x, y: bonus_item_rect.pos.y }
+
+                scaled_fuzzy_distance := bonus_middle.distance_sqr_scaled(ship_middle)
+
+                if scaled_fuzzy_distance <= 12.0 {
+                  .score += 100
+                  .score_bonus.add(ScoreBonus { pos: bonus_item.pos, tick: 0, score: 100 })
+                  .bonus_items.erase(bonus_item_id)
+                  ship.picked_up_bonus_at = .tick_count
+                }
+            })
+        }
+
+        // Floating score bonus
+        for bonus_id, mut bonus in .score_bonus {
+            // This is just to show that the scope is not needed for if statements
+            // But it is strongly recommended with '{' '}' for easier reading
+            if bonus.tick >= 30
+                .score_bonus.erase(bonus_id)
+             else {
+                bonus.tick += 1
+            }
+        }
+
+    } // end of tick
+}

@@ -1,0 +1,8 @@
+extension swamp
+
+packages_directory ../packages/
+
+artifact {
+	directory ../assets/bin
+	extension lily
+}

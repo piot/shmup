@@ -1,0 +1,9 @@
+.DS_Store
+./mangrove
+libsteam_api.so
+libsteam_api.dylib
+build/
+temp/
+mangrove.local.yini
+game_actions_1802440.vdf
+assets/bin

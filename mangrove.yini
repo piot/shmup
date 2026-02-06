@@ -1,0 +1,19 @@
+render {
+    enable true
+    tick true
+    mode :windowed{
+        width: 320
+        height: 180
+    }
+    scale 2
+}
+
+simulation {
+    enable true
+    tick true
+}
+
+vm {
+    heap 4MiB
+}
+

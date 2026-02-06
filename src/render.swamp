@@ -1,0 +1,346 @@
+use mangrove::render::*
+
+mod simulation
+
+const SCREEN_HEIGHT = 180
+const SCREEN_HEIGHT_F = 180.float()
+const SCREEN_WIDTH = 320
+const SIZE = 16
+const SHIP_TEXTURE_SIZE = (SIZE*3, SIZE)
+const CELL_SIZE = (SIZE, SIZE)
+const STANDARD_ROTATE = mangrove::render::Rotate::Degrees270
+
+const SHIP_SPRITE_PARAMS = SpriteParams {
+    rotate: STANDARD_ROTATE,
+    ..
+}
+
+
+/// Handles the rendering of the game
+struct Render {
+    player_ship_material: mangrove::render::FixedAtlas,
+    player_shot_material: mangrove::render::FixedAtlas,
+    alan_material: mangrove::render::FixedAtlas,
+    bon_bon_material: mangrove::render::FixedAtlas,
+    lips_material: mangrove::render::FixedAtlas,
+    bonus_pickup_material: mangrove::render::FixedAtlas,
+    boosters_material: mangrove::render::FixedAtlas,
+    explosion_material: mangrove::render::FixedAtlas,
+    enemy_projectile: mangrove::render::FixedAtlas,
+    background_material: mangrove::render::MaterialHandle,
+    font_and_material: mangrove::render::FontAndMaterialHandle,
+    tick: Int,
+}
+
+fn atlas_16(material: MaterialHandle) -> mangrove::render::FixedAtlas {
+    mangrove::render::FixedAtlas {
+        grid_size: (16, 16),
+        material: material,
+    }
+}
+
+fn atlas(material: MaterialHandle, size: (Int, Int)) -> mangrove::render::FixedAtlas {
+     mangrove::render::FixedAtlas {
+        grid_size: size,
+        material: material,
+    }
+}
+
+impl Render {
+
+    fn new() -> Render {
+        player_ship_material : mangrove::render::MaterialHandle = @player/ship_16x16
+
+        Render {
+            player_ship_material: atlas_16(player_ship_material),
+            player_shot_material: atlas(@projectiles/player_beam, (16, 4)),
+            alan_material: atlas_16(@enemies/alan_16x16),
+            bon_bon_material: atlas_16(@enemies/bon_bon_16x16),
+            lips_material: atlas_16(@enemies/lips_16x16),
+            bonus_pickup_material: atlas_16(@items/pickups_16x16),
+            explosion_material: atlas_16(@effects/explosion_16x16),
+            boosters_material: atlas_16(@player/boosters_16x16),
+            enemy_projectile:  atlas_16(@projectiles/enemy_projectile),
+            background_material: @blue_nebula_04_512x512,
+            font_and_material: @font/hackman,
+            tick: 0,
+        }
+    }
+
+    fn fill_zeroes(s: String, len: Int) -> String {
+        mut x = s
+        while x.len() < len {
+            x = '0{x}'
+        }
+        x
+    }
+
+    fn render_shot(self, shot: simulation::Shot) {
+        match shot.type {
+            Tiny -> {
+                shot_pos := (shot.x.floor() - 4, shot.y.floor() - 1, 0)
+                //gfx.quad((shot.x.floor(), shot.y.floor(), 10), (12, 4), Color::new(1.0, 1.0, 0.0, 0.5))
+                normalized := 1.0 // (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
+                shot_power := normalized * 0.8 + 0.2
+                shot_sprite_params := SpriteParams {
+                    rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
+                    color: Color::new(1.0, 1.0, 1.0, shot_power),
+                    ..
+                }
+
+                .player_shot_material.sprite_atlas_frame_ex(shot_pos, 1, shot_sprite_params)
+            },
+            Magentas -> {
+                shot_pos := (shot.x.floor() - 8, shot.y.floor() - 8, 0)
+                //gfx.quad((shot.x.floor(), shot.y.floor(), 10), (8, 8), Color::new(1.0, 1.0, 0.0, 0.5))
+                // mag_ prefix since it conflicted with Tiny {} scope above
+                mag_normalized := 1.0 // (shot.tick.float() / 3.0).sin() * 0.5 + 0.5
+                mag_shot_power := mag_normalized * 0.8 + 0.2
+                mag_index := (shot.tick / 10) % 2
+                mag_shot_sprite_params := SpriteParams {
+                    rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
+                    color: Color::new(1.0, 1.0, 1.0, mag_shot_power),
+                    ..
+                }
+
+                .enemy_projectile.sprite_atlas_frame_ex(shot_pos, mag_index,
+                    mag_shot_sprite_params)
+            }
+        }
+
+    }
+
+
+    /// Called by the mangrove engine every render tick
+    #[host_call]
+    fn render(mut self, logic: simulation::Logic) {
+        Gfx::set_virtual_resolution((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+        {
+            score_string := Render::fill_zeroes('{logic.score}', 6)
+            .font_and_material.text((SCREEN_WIDTH-100, SCREEN_HEIGHT-37, 0), 'SCORE {score_string}',
+                Color::new(1.0, 0.8, 1.0, 0.5))
+        }
+
+
+        for id, enemy in logic.enemies {
+            z := match enemy.enemy {
+                Alan -> 1,
+                BonBon -> 2,
+                Lips -> 3,
+            }
+
+            enemy_pos := (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
+            pulsating_time := enemy.could_be_together.time % 53
+            frame := if pulsating_time < 40  pulsating_time / 10 else 0
+
+            material := match enemy.enemy {
+                Alan -> .alan_material,
+                BonBon -> .bon_bon_material,
+                Lips -> .lips_material,
+            }
+
+            material.sprite_atlas_frame(enemy_pos, frame)
+        }
+
+        // Shots
+        for shot in logic.shots {
+            .render_shot(shot)
+        }
+
+        // Ships
+        for id, ship in logic.ships {
+            //print('ship:{ship}')
+            ship_pos := (ship.rect.pos.x.floor() - 8, ship.rect.pos.y.floor() - 8, 0) // 8 pixels to center
+            //gfx.quad((ship.rect.pos.x.floor(), ship.rect.pos.y.floor(), 20), (5, 5), Color::new(1.0, 1.0, 0.0, 0.8))
+            ship_frame := match ship.direction.y.sign() {
+                1.0 -> 0,
+                -1.0 -> 2,
+                _ -> 1,
+            }
+
+            params := SpriteParams {
+                rotate: Degrees270,
+                ..
+            }
+
+            .player_ship_material.sprite_atlas_frame_ex(ship_pos, ship_frame, SHIP_SPRITE_PARAMS)
+
+            normalized_x_movement := ship.direction.x.abs() / 0.6
+
+            booster_value: Int? =
+                | ship.direction.x > 0.6 -> 0
+                | ship.direction.x > 0.0 -> 1
+                | _ -> none
+
+            // Render boosters
+            when booster_value {
+                x, y = ship_pos
+                adjusted_pos := (x - 15, y, 0)
+                booster_sprite_params := SpriteParams {
+                    rotate: mangrove::render::Rotate::Degrees270, // Rotation is counterclockwise
+                    color: Color::new(1.0, 1.0, 1.0, normalized_x_movement),
+                    ..
+                }
+                //.boosters_material.sprite_atlas_frame_ex(adjusted_pos,  booster_value, booster_sprite_params)
+            }
+        }
+
+        // Render scrolling background
+        only tick_count=logic.tick_count,  mat=.background_material {
+            background_x := (tick_count.float() * 0.5).floor() % 512
+
+            mat.sprite_ex((0, 0, -100), SpriteParams {
+                color: Color::new(1.0, 1.0, 1.0, 0.5),
+                uv: (background_x, 0),
+                ..
+            })
+        }
+
+        // Explosions
+        // `with` statement not really needed here. mostly for testing
+        only expl = logic.explosions,  expl_mat=.explosion_material {
+            for id, explosion in expl {
+                sprite_x := explosion.pos.x.round() - 8
+                sprite_y := explosion.pos.y.floor() - 8
+                //explosion_pos := (explosion.pos.x.floor() , explosion.pos.y.floor(), 0)
+                explosion_pos := (sprite_x, sprite_y, 20)
+                adjusted_time := explosion.tick * 5 / 40
+                // Explosion animation has 6 frames
+                frame :=
+                    | adjusted_time < 5 -> adjusted_time
+                    | _ -> 4
+                power := 1.0 - (explosion.tick.float() / 30.0).min(1.0)
+                explosion_sprite_params := SpriteParams {
+                    rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
+                    color: Color::new(1.0, 1.0, 1.0, power),
+                    ..
+                }
+               // expl_mat.sprite_atlas_frame_ex(explosion_pos,  frame, explosion_sprite_params)
+            }
+        }
+
+
+        // TODO:Duplicate, which one is best
+        for bonus_item in logic.bonus_items {
+            pivot_x, pivot_y = (-6, -6) // bonus is a bit into the sprite frame
+            bonus_pos :=
+                (bonus_item.pos.x.round() + pivot_x, bonus_item.pos.y.round() + pivot_y, -1)
+            frame := 0
+
+            .bonus_pickup_material.sprite_atlas_frame(bonus_pos, frame)
+        }
+
+        // render score bonus
+        for id, bonus in logic.score_bonus {
+            score_string := Render::fill_zeroes('{bonus.score}', 2)
+
+            y_offset := bonus.tick.float() / 2.0
+            pos_3d := (bonus.pos.x.floor(), bonus.pos.y.floor() + y_offset.floor(), 0)
+            power := 1.0 // TODO: (20 - bonus.tick).max(0).float() / 30.0
+
+            .font_and_material.text(pos_3d, score_string, Color::new(0.5, 0.5, 1.0, power))
+        }
+
+
+        .tick += 1
+        safe_value := (.tick % 32000).float()
+
+        width_factor := (safe_value / 40.0).sin() * 0.5 + 0.5
+        height_factor := (safe_value / 68.0).sin() * 0.5 + 0.5
+        window_x := ((safe_value.floor() / 3) % 500) - 100
+
+        width :=  width_factor * 40.0 + 40.0
+        height := height_factor * 50.0 + 40.0
+
+        offset := -200 + .tick % 500
+        smaller_offset := -100 + .tick % 200
+
+        for i in 0..10 {
+            factor := i.float() * 0.1
+
+            red := factor
+            green := 1.0 - factor
+            blue := 0.5 * factor
+
+            //gfx.quad((offset + 10 + i * 25, smaller_offset + 20 + i * 4, 0), (20, 10 *i),
+            //Color::new(red, green, blue, 1.0))
+        }
+
+/* TODO:
+        {
+            score_string := Render::fill_zeroes('{logic.score}', 6)
+            gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}',
+               .font_and_material, Color::new(1.0, 0.8, 1.0, 0.5))
+        }
+*/
+
+
+/* TODO:
+        // Render score
+        with score=logic.score, mut gfx=&gfx, font_mat=.font_and_material {
+            score_string := Render::fill_zeroes('{score}', 6)
+            gfx.text((SCREEN_WIDTH-60, SCREEN_HEIGHT-30, 0), 'SCORE {score_string}',
+               font_mat, Color::new(1.0, 0.8, 1.0, 0.5))
+        }
+
+*/
+
+
+        // Render shots
+        with shots = &logic.shots {
+            for shot in shots {
+                .render_shot(shot)
+            }
+        }
+
+        // Render enemies
+        with enemies=&logic.enemies {
+            for id, enemy in enemies {
+                z := match enemy.enemy {
+                    Alan -> 1,
+                    BonBon -> 2,
+                    Lips -> 3,
+                }
+                enemy_pos := (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
+                pulsating_time := enemy.could_be_together.time % 53
+                frame := if pulsating_time < 40  pulsating_time/10  else  0
+
+                material := match enemy.enemy {
+                    Alan -> .alan_material,
+                    BonBon -> .bon_bon_material,
+                    Lips -> .lips_material,
+                }
+
+                material.sprite_atlas_frame(enemy_pos, frame)
+            }
+        }
+
+
+        // Render explosions
+        only explosions=logic.explosions, mat=.explosion_material  {
+            for explosion in explosions {
+                explosion_pos := (explosion.pos.x.floor() + 4, explosion.pos.y.floor(), 0)
+                adjusted_time := explosion.tick / 3
+                // Explosion animation has 6 frames
+                frame :=
+                    | adjusted_time < 6 -> adjusted_time
+                    | _ -> 5
+
+                power := 1.0 - (explosion.tick.float() / 18.0).min(1.0)
+                explosion_sprite_params := SpriteParams {
+                    rotate: mangrove::render::Rotate::Degrees90, // Rotation is counterclockwise
+                    color: Color::new(1.0, 1.0, 1.0, power),
+                    ..
+                }
+
+                mat.sprite_atlas_frame_ex(explosion_pos, frame, explosion_sprite_params)
+            }
+        }
+
+
+
+    }
+}
+
+

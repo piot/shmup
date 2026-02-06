@@ -1,0 +1,9 @@
+# yini - yet another ini file format.
+
+# Only support for members now, which are the relative directories to the swamp projects that belong to the "workspace"
+
+workspace {
+	members [
+        src/
+	]
+}
