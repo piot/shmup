@@ -25,13 +25,13 @@ impl Audio {
     #[host_call]
     fn tick(mut self, mut sfx: mangrove::audio::Sfx, logic: simulation::Logic) {
         for shot in logic.shots {
-            if shot.created_at > self.last_processed_sim_tick {
+            if shot.created_at > .last_processed_sim_tick {
                 handle := match shot.faction {
                     Player -> {
-                        self.human_fire[0]
+                        .human_fire[0]
                     }
                     Enemy -> {
-                        self.alien_fire[0]
+                        .alien_fire[0]
                     }
                 }
                 sfx.trig(handle)
@@ -39,22 +39,22 @@ impl Audio {
         }
 
         for explosion in logic.explosions {
-            if explosion.created_at > self.last_processed_sim_tick {
-                if logic.tick_count - self.last_alien_explosion > 10 {
-                    handle := self.alien_explosion[0]
+            if explosion.created_at > .last_processed_sim_tick {
+                if logic.tick_count - .last_alien_explosion > 10 {
+                    handle := .alien_explosion[0]
                     sfx.trig(handle)
-                    self.last_alien_explosion = logic.tick_count
+                    .last_alien_explosion = logic.tick_count
                 }
             }
         }
 
         for ship in logic.ships {
-            if ship.picked_up_bonus_at > self.last_processed_sim_tick {
-                handle := self.human_powerup[0]
+            if ship.picked_up_bonus_at > .last_processed_sim_tick {
+                handle := .human_powerup[0]
                 sfx.trig(handle)
             }
         }
 
-        self.last_processed_sim_tick = logic.tick_count
+        .last_processed_sim_tick = logic.tick_count
     }
 }

@@ -37,6 +37,12 @@ struct Shot {
     type: ShotType,
 }
 
+
+bits ActionFlags {
+    fire: 1,
+    rockets: 1,
+}
+
 struct Player {
     fire: Bool,
     assigned_ship_index: PoolId?,
@@ -122,10 +128,10 @@ struct BonusItem {
     pos: Position,
 }
 
+
 struct ShipAction {
     move: (Float, Float),
-    fire: Bool,
-    rockets: Bool,
+    actions: ActionFlags,
 }
 
 
