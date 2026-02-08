@@ -17,54 +17,54 @@ const MAGNITUDE = 8.0
 const FIRE_COOLDOWN = 43
 
 enum Faction {
-    Player,
-    Enemy,
+    Player
+    Enemy
 }
 
 
 enum ShotType {
-    Tiny,
-    Magentas,
+    Tiny
+    Magentas
 }
 
 struct Shot {
-    x: Float,
-    y: Float,
-    direction: Position,
-    tick: Int,
-    created_at: Int,
-    faction: Faction,
-    type: ShotType,
+    x: Float
+    y: Float
+    direction: Position
+    tick: Int
+    created_at: Int
+    faction: Faction
+    type: ShotType
 }
 
 
 bits ActionFlags {
-    fire: 1,
-    rockets: 1,
+    fire: 1
+    rockets: 1
 }
 
 struct Player {
-    fire: Bool,
-    assigned_ship_index: PoolId?,
-    move_direction: Position,
+    fire: Bool
+    assigned_ship_index: PoolId?
+    move_direction: Position
 }
 
 struct Weapon {
-    fire_cooldown: Int,
-    wants_to_fire: Bool,
+    fire_cooldown: Int
+    wants_to_fire: Bool
 }
 
 struct Ship {
-    rect: Rect,
-    direction: Position,
-    weapon: Weapon,
-    picked_up_bonus_at: Int,
+    rect: Rect
+    direction: Position
+    weapon: Weapon
+    picked_up_bonus_at: Int
 }
 
 enum EnemyType {
-    Alan,
-    BonBon,
-    Lips,
+    Alan
+    BonBon
+    Lips
 }
 
 impl EnemyType {
@@ -82,12 +82,12 @@ struct Waypoints {
 }
 
 enum FormationMovement {
-    Waypoints(Waypoints),
-    Sine,
+    Waypoints (Waypoints)
+    Sine
 }
 
 struct Formation {
-    movement: FormationMovement,
+    movement: FormationMovement
 }
 
 
@@ -96,15 +96,15 @@ struct Brain {
 }
 
 struct Enemy {
-    rect: Rect,
-    direction: Float,
-    enemy: EnemyType,
-    formation: Int,
+    rect: Rect
+    direction: Float
+    enemy: EnemyType
+    formation: Int
     could_be_together: {
         time: Int,
         base_y: Float,
-    },
-    brain: Brain,
+    }
+    brain: Brain
 }
 
 enum ExplosionType {
@@ -112,50 +112,50 @@ enum ExplosionType {
 }
 
 struct Explosion {
-    pos: Position,
-    tick: Int,
+    pos: Position
+    tick: Int
     created_at: Int,
-    type: ExplosionType,
+    type: ExplosionType
 }
 
 struct ScoreBonus {
-    pos: Position,
-    tick: Int,
-    score: Int,
+    pos: Position
+    tick: Int
+    score: Int
 }
 
 struct BonusItem {
-    pos: Position,
+    pos: Position
 }
 
 
 struct ShipAction {
-    move: (Float, Float),
-    actions: ActionFlags,
+    move: (Float, Float)
+    actions: ActionFlags
 }
 
 
 enum PlayerAction {
-    Nothing,
-    ShipAction(ShipAction),
+    Nothing
+    ShipAction ShipAction
 }
 
 
 struct Logic {
-    enemies: Bag<Enemy; 128>,
-    tick_count: Int, /// how many ticks have passed
-    ships: Pool<Ship; 4>, // Pool is needed because player has an id reference to the ships
-    explosions: Bag<Explosion; 64>,
-    score_bonus: Bag<ScoreBonus; 64>,
-    bonus_items: Bag<BonusItem; 8>,
-    players: [Int: Player; 4],
-    formations: [Int: Formation; 64],
-    cooldown_settings: [Int; 3], // just to test arrays
-    score: Int,
-    formation_id: Int,
-    enemy_type: EnemyType,
-    prng_x: Int,
-    shots: Bag<Shot; 128>,
+    enemies: Bag<Enemy; 128>
+    tick_count: Int /// how many ticks have passed
+    ships: Pool<Ship; 4> // Pool is needed because player has an id reference to the ships
+    explosions: Bag<Explosion; 64>
+    score_bonus: Bag<ScoreBonus; 64>
+    bonus_items: Bag<BonusItem; 8>
+    players: [Int: Player; 4]
+    formations: [Int: Formation; 64]
+    cooldown_settings: [Int; 3] // just to test arrays
+    score: Int
+    formation_id: Int
+    enemy_type: EnemyType
+    prng_x: Int
+    shots: Bag<Shot; 128>
 }
 
 impl Brain {

@@ -1,6 +1,6 @@
 struct Position {
-    x: Float,
-    y: Float,
+    x: Float
+    y: Float
 }
 
 type Int2 = (Int, Int)
@@ -80,13 +80,13 @@ impl Position {
 }
 
 struct Size {
-    width: Float,
-    height: Float,
+    width: Float
+    height: Float
 }
 
 struct Rect {
-    pos: Position,
-    size: Size,
+    pos: Position
+    size: Size
 }
 
 impl Rect {

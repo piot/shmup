@@ -18,18 +18,18 @@ const SHIP_SPRITE_PARAMS = SpriteParams {
 
 /// Handles the rendering of the game
 struct Render {
-    player_ship_material: mangrove::render::FixedAtlas,
-    player_shot_material: mangrove::render::FixedAtlas,
-    alan_material: mangrove::render::FixedAtlas,
-    bon_bon_material: mangrove::render::FixedAtlas,
-    lips_material: mangrove::render::FixedAtlas,
-    bonus_pickup_material: mangrove::render::FixedAtlas,
-    boosters_material: mangrove::render::FixedAtlas,
-    explosion_material: mangrove::render::FixedAtlas,
-    enemy_projectile: mangrove::render::FixedAtlas,
-    background_material: mangrove::render::MaterialHandle,
-    font_and_material: mangrove::render::FontAndMaterialHandle,
-    tick: Int,
+    player_ship_material: mangrove::render::FixedAtlas
+    player_shot_material: mangrove::render::FixedAtlas
+    alan_material: mangrove::render::FixedAtlas
+    bon_bon_material: mangrove::render::FixedAtlas
+    lips_material: mangrove::render::FixedAtlas
+    bonus_pickup_material: mangrove::render::FixedAtlas
+    boosters_material: mangrove::render::FixedAtlas
+    explosion_material: mangrove::render::FixedAtlas
+    enemy_projectile: mangrove::render::FixedAtlas
+    background_material: mangrove::render::MaterialHandle
+    font_and_material: mangrove::render::FontAndMaterialHandle
+    tick: Int
 }
 
 fn atlas_16(material: MaterialHandle) -> mangrove::render::FixedAtlas {

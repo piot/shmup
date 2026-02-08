@@ -3,12 +3,12 @@ use mangrove::audio
 
 
 struct Audio {
-    last_processed_sim_tick: Int,
-    alien_fire: [mangrove::audio::AudioHandle; 3],
-    human_fire: [mangrove::audio::AudioHandle; 3],
-    alien_explosion: [mangrove::audio::AudioHandle; 3],
-    human_powerup: [mangrove::audio::AudioHandle; 3],
-    last_alien_explosion: Int,
+    last_processed_sim_tick: Int
+    alien_fire: [mangrove::audio::AudioHandle; 3]
+    human_fire: [mangrove::audio::AudioHandle; 3]
+    alien_explosion: [mangrove::audio::AudioHandle; 3]
+    human_powerup: [mangrove::audio::AudioHandle; 3]
+    last_alien_explosion: Int
 }
 
 impl Audio {

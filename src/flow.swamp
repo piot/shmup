@@ -1,34 +1,34 @@
 enum State {
-    Start,
-    MainMenu,
-    Game,
-    GameOver,
+    Start
+    MainMenu
+    Game
+    GameOver
 }
 
 /// This is the top level action that can be taken by the local player.
 enum FlowAction {
-    WantsToJoin,
-    MenuAction(MenuAction),
+    WantsToJoin
+    MenuAction (MenuAction)
 }
 
 
 enum MenuMove {
-    Nothing,
-    Up,
-    Down,
-    Left,
-    Right,
+    Nothing
+    Up
+    Down
+    Left
+    Right
  }
 
  enum MenuAction {
-    Nothing,
-    Select,
-    Back,
+    Nothing
+    Select
+    Back
  }
 
 struct MenuAction {
-    move: MenuMove,
-    action: MenuAction,
+    move: MenuMove
+    action: MenuAction
 }
 
 
