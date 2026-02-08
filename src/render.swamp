@@ -285,35 +285,36 @@ impl Render {
         }
 
 */
-
+        // Safe borrow
+        shots = &logic.shots
 
         // Render shots
-        with shots = &logic.shots {
-            for shot in shots {
-                .render_shot(shot)
-            }
+        for shot in shots {
+            .render_shot(shot)
         }
 
         // Render enemies
-        with enemies=&logic.enemies {
-            for id, enemy in enemies {
-                z := match enemy.enemy {
-                    Alan -> 1,
-                    BonBon -> 2,
-                    Lips -> 3,
-                }
-                enemy_pos := (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
-                pulsating_time := enemy.could_be_together.time % 53
-                frame := if pulsating_time < 40  pulsating_time/10  else  0
 
-                material := match enemy.enemy {
-                    Alan -> .alan_material,
-                    BonBon -> .bon_bon_material,
-                    Lips -> .lips_material,
-                }
+        // Safe Borrow
+        enemies = &logic.enemies
 
-                material.sprite_atlas_frame(enemy_pos, frame)
+        for id, enemy in enemies {
+            z := match enemy.enemy {
+                Alan -> 1,
+                BonBon -> 2,
+                Lips -> 3,
             }
+            enemy_pos := (enemy.rect.pos.x.floor(), enemy.rect.pos.y.floor(), z)
+            pulsating_time := enemy.could_be_together.time % 53
+            frame := if pulsating_time < 40  pulsating_time/10  else  0
+
+            material := match enemy.enemy {
+                Alan -> .alan_material,
+                BonBon -> .bon_bon_material,
+                Lips -> .lips_material,
+            }
+
+            material.sprite_atlas_frame(enemy_pos, frame)
         }
 
 

@@ -223,16 +223,9 @@ impl Logic {
         // Copy player input to ship and ship weapon
         for mut player in .players {
             when ship_index = player.assigned_ship_index {
-                /* OLD Version
 
-                mut ship = .ships[ship_index]
-                    ship.weapon.wants_to_fire = player.fire
-                    ship.direction = player.move_direction
-                .ships[ship_index] = ship
-
-                */
-                //print('player {player} index: {ship_index}')
-
+                // Unsafe borrow, it is scoped so you can see
+                // which part of the code that should make sure `.ships[ship_index]` isn't altered
                 with mut ship = &.ships[ship_index] {
                   //  print('ship: {ship}')
                     ship.weapon.wants_to_fire = player.fire
@@ -336,9 +329,10 @@ impl Logic {
 
     fn player_input_to_ship_direction(mut self, player: Player) {
         when ship_index = player.assigned_ship_index {
-            mut ship := .ships[ship_index]
-            ship.direction = player.move_direction
-            .ships[ship_index] = ship
+            // borrow
+            with mut ship = &.ships[ship_index] {
+                ship.direction = player.move_direction
+            }
         } else if player.fire {
             // print('ship not assigned yet, press fire to assign')
         } else {
