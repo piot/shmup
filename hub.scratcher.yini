@@ -1,0 +1,13 @@
+app: {
+    icon: shmup_1024.png
+}
+
+itch: {
+    username: lily2d
+    project: shmup
+    branch: test
+}
+
+lily: {
+    engine_version: "0.3.39"
+}

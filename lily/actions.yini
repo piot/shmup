@@ -1,0 +1,15 @@
+action_sets: {
+    menu: {
+        navigate: :axis2d
+        select: :button
+        back: :button
+        cursor: :cursor
+    }
+
+    SpaceCraft: {
+        move: :axis2d
+        fire: :button
+        ability1: :button
+        cursor: :cursor
+    }
+}

@@ -1,0 +1,19 @@
+name: Shmup
+version: "0.0.0"
+
+compiler_version: "0.5.0"
+edition: 2026
+
+extension: sw
+
+artifact: {
+    directory: lily/bin
+    extension: lily
+}
+
+dependencies: {
+    lily: "0.3.39"
+    gfx: "0.0.1-alpha.3"
+}
+
+assets_dir: assets/

@@ -1,0 +1,18 @@
+bindings: {
+     # The action set
+    SpaceCraft: {
+
+        # Move the ship around
+        move: [
+            :stick
+        ]
+
+        fire: [
+            :key(space)
+        ]
+
+        cursor: :mouse_cursor
+    }
+
+
+}

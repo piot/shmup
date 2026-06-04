@@ -1,0 +1,12 @@
+bindings: {
+     # The action set
+    SpaceCraft: {
+
+        # Move the ship around
+        move:             :left_stick
+
+        fire: [
+            :button(:south)
+        ]
+    }
+}

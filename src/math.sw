@@ -1,0 +1,125 @@
+#![api]
+
+struct Position {
+    x: Float
+    y: Float
+}
+
+type Int2 = (Int, Int)
+
+impl Position {
+    fn new(x: Float, y: Float) -> Position {
+        Position { x: x, y: y }
+    }
+
+    fn add_mut(mut self, other: Position) {
+        .x += other.x
+        .y += other.y
+    }
+
+    /// Called manually or by `+` in Swamp
+    fn add(self, other: Position) -> Position {
+        Position {
+            x: .x + other.x,
+            y: .y + other.y,
+        }
+    }
+
+    /// Called manually or by `*` in Swamp
+    fn mul(self, other: Position) -> Position {
+        Position {
+            x: .x * other.x,
+            y: .y * other.y,
+        }
+    }
+
+    fn scale(self, scalar: Float) -> Position {
+        Position {
+            x: .x * scalar,
+            y: .y * scalar,
+        }
+    }
+
+    fn sub(self, other: Position) -> Position {
+        Position {
+            x: .x - other.x,
+            y: .y - other.y,
+        }
+    }
+
+    // returns the distance
+    fn distance(self, other: Position) -> Float {
+        diff := .sub(other)
+       diff.x.magnitude(diff.y)
+    }
+
+    // returns a distance value, useful for comparison
+    fn distance_sqr_scaled(self, other: Position) -> Float {
+        diff := .sub(other)
+        sum := diff.x.magnitude_sqr_scaled(diff.y)
+        sum
+    }
+
+
+    // returns the normalized vector
+    fn normalize(self) -> Position {
+        norm_x, norm_y = when normalized = .x.normalize(.y) {
+            normalized
+        } else {
+            (0.0, 0.0)
+        }
+        [ norm_x , norm_y ]
+    }
+
+    fn direction(self) -> Position {
+        angle := .y.atan2(.x)
+        cos_x := angle.cos()
+        sin_y := angle.sin()
+
+        Position {
+            y: sin_y,
+            x: cos_x,
+        }
+    }
+
+    fn floor(self) -> Int2 {
+        (.x.floor(), .y.floor())
+    }
+}
+
+struct Size {
+    width: Float
+    height: Float
+}
+
+struct Rect {
+    pos: Position
+    size: Size
+}
+
+impl Rect {
+    fn new(pos: Position, size: Size) -> Rect {
+        Rect { pos: pos, size: size }
+    }
+
+    fn intersects(self, other: Rect) -> Bool {
+        .pos.x < other.pos.x + other.size.width &&
+        .pos.x + .size.width > other.pos.x &&
+        .pos.y < other.pos.y + other.size.height &&
+        .pos.y + .size.height > other.pos.y
+    }
+
+    fn contains(self, other: Position) -> Bool {
+        other.x >= .pos.x &&
+        other.x <= .pos.x + .size.width &&
+        other.y >= .pos.y &&
+        other.y <= .pos.y + .size.height
+    }
+
+    fn contains_xy(self, x: Float, y: Float) -> Bool {
+        x >= .pos.x &&
+        x <= .pos.x + .size.width &&
+        y >= .pos.y &&
+        y <= .pos.y + .size.height
+    }
+}

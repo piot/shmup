@@ -1,0 +1,17 @@
+.DS_Store
+.sprout-vendor
+./mangrove
+libsteam_api.so
+libsteam_api.dylib
+build/
+temp/
+mangrove.local.yini
+game_actions_1802440.vdf
+assets/bin
+build_output
+__temp
+__build
+itch_build_output
+/lily/bin/main.lily
+asset_source/
+/assets_source
