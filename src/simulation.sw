@@ -291,7 +291,7 @@ impl Logic {
     // This is not normally how you structure the code
     // it is just to show `mut` arguments
     fn move_in_y_with_direction(mut position: Position, direction: Float) {
-        position.y += direction
+        position.y += direction * 1.3
         max_y := SCREEN_HEIGHT_F - SHIP_Y_MARGIN
         if position.y < 10.0  position.y = 10.0
         if position.y > 200.0  position.y = 200.0
@@ -401,7 +401,7 @@ impl Logic {
                     continue
                 }
 
-                ship.weapon.fire_cooldown = 30
+                ship.weapon.fire_cooldown = 24
 
                 .shots.add( {
                     x: ship.rect.pos.x + 12.0,

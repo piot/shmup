@@ -3,7 +3,7 @@
 
 packages: {
     lily: {
-        version: "0.3.39"
+        version: "0.3.40"
     }
     gfx: {
         version: "0.0.1-alpha.3"

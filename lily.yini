@@ -1,5 +1,5 @@
 name: Shmup - Example Project
-engine_version: "0.3.39"
+engine_version: "0.3.40"
 engine_asset_dir: lily/
 
 
@@ -17,5 +17,5 @@ render: {
 }
 
 vm: {
-    heap: 4MiB
+    heap: 2MiB
 }
