@@ -6,7 +6,7 @@ use lily::gm
 use lily::wgpu_types::{Vec2f, Mat4f}
 
 const VIRTUAL_SCREEN_HEIGHT = 180
-const VIRTUAL_SCREEN_HEIGHT_F = 180.float()
+//const VIRTUAL_SCREEN_HEIGHT_F = 180.float()
 const VIRTUAL_SCREEN_WIDTH = 320
 
 struct Render {
@@ -89,14 +89,7 @@ impl Render {
 
         time := (.timer.float() / 30.0)
 
-        //sway := (((time * 2.0).cos() * 2.0) + 1.0) / 2.0
-        //angle := time * 2.0
-
         mut sprite_instances: Block<SpriteInstance; 32>
-
-        //mut bind_group_draws: Vec<BindGroupInfo; 10>
-
-        // === Fill in instances and copy to wgpu ==
 
         // === Add Render Passes ===
         // Sprite Pass =============
@@ -105,8 +98,6 @@ impl Render {
 
 
         // === Background ===
-        //sprite_view_proj := gm::Mat4::ortho_2d_int(320, 200, 1.0).to_mat4f()
-
         sprite_pass.set_pipeline(.background_scroll.scroll_pipeline)
         sprite_pass.set_bind_group(0, .background_scroll_bind_groups)
         sprite_pass.set_vertex_buffer(0, .background_scroll.sprite_quad_vertices)
@@ -136,7 +127,6 @@ impl Render {
         .sprites.set_pipeline(&sprite_pass) // pipeline must be first
         .sprites.set_instances(&sprite_pass) // set the index vertex buffer (sprite instances)
 
-
         mut sprite_index = 0
         mut sprite_index_start = 0
 
@@ -157,7 +147,7 @@ impl Render {
                 position: { x: screen_x, y: screen_y }
                 scale: [1.0, 1.0]
                 sprite_index: ship_frame
-                tint_color: 0xFFFFFFFF
+                tint_color: 0xFFffffFF
                 rotation: 1.5 * PI
                 pivot: [8.0, 8.0]
                 flags: 0

@@ -9,18 +9,6 @@ struct PlayerInput {
     fire: Bool
 }
 
-
-impl PlayerInput {
-    // fn new() -> PlayerInput {
-    //     PlayerInput {
-    //             mouse_cursor_position: (0, 0),
-    //             mouse_left_button: false,
-    //             mouse_right_button: false,
-    //             ..
-    //         }
-    // }
-}
-
 struct SpaceCraft {
     move: (Float, Float)
     fire: Bool
