@@ -1,14 +1,10 @@
+// Copyright (c) 2026 Peter Björklund.
+// Licensed under the MIT License.
+
 use lily::input::{get_active_devices, set_active_action_set, get}
+mod simulation::{PlayerInput}
 
-struct PlayerInput {
-	mouse_cursor_position: (Int, Int)
-	mouse_left_button: Bool
-	mouse_right_button: Bool
-    mouse_wheel_line_delta: (Float, Float)
-    move: (Float, Float)
-    fire: Bool
-}
-
+#[actionset]
 struct SpaceCraft {
     move: (Float, Float)
     fire: Bool
@@ -24,13 +20,7 @@ struct Input {
 }
 
 impl Input {
-    fn new() -> Input {
-        Input {
-            ..
-        }
-    }
 
-    #[host_call]
     fn tick(mut self) -> PlayerInput {
         self.dummy = 1
         active_devices: Vec<Int; 8> = get_active_devices()

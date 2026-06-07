@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Peter Björklund.
+// Licensed under the MIT License.
+
 #![api]
 
 struct Position {
@@ -20,30 +23,30 @@ impl Position {
     /// Called manually or by `+` in Swamp
     fn add(self, other: Position) -> Position {
         Position {
-            x: .x + other.x,
-            y: .y + other.y,
+            x: .x + other.x
+            y: .y + other.y
         }
     }
 
     /// Called manually or by `*` in Swamp
     fn mul(self, other: Position) -> Position {
         Position {
-            x: .x * other.x,
-            y: .y * other.y,
+            x: .x * other.x
+            y: .y * other.y
         }
     }
 
     fn scale(self, scalar: Float) -> Position {
         Position {
-            x: .x * scalar,
-            y: .y * scalar,
+            x: .x * scalar
+            y: .y * scalar
         }
     }
 
     fn sub(self, other: Position) -> Position {
         Position {
-            x: .x - other.x,
-            y: .y - other.y,
+            x: .x - other.x
+            y: .y - other.y
         }
     }
 
@@ -77,8 +80,8 @@ impl Position {
         sin_y := angle.sin()
 
         Position {
-            y: sin_y,
-            x: cos_x,
+            y: sin_y
+            x: cos_x
         }
     }
 
@@ -99,7 +102,7 @@ struct Rect {
 
 impl Rect {
     fn new(pos: Position, size: Size) -> Rect {
-        Rect { pos: pos, size: size }
+        { pos: pos, size: size }
     }
 
     fn intersects(self, other: Rect) -> Bool {

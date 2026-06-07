@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Peter Björklund.
+// Licensed under the MIT License.
+
 use lily::audio
 mod simulation
 
@@ -25,13 +28,12 @@ impl Audio {
             root_note: 0
             gate_duration: 100
         }
+
         for variation in PLAYER_SHOT_VARIATIONS {
             audio::load_wav_stereo(variation, sound_definition)
         }
 
         audio::load_wav_stereo(@audio/alien_fire1.wav, sound_definition)
-
-
 
         {..}
     }
@@ -54,39 +56,41 @@ impl Audio {
             audio::stream_ogg_vorbis(0, music_sound_definition.root_note, @audio/short_song.ogg, music_sound_definition, 1.0)
         }
         for shot in logic.shots {
-            if shot.created_at > .last_processed_sim_tick {
-                match shot.faction {
-                    Player -> {
-                            voice_to_use := if audio::get_voice_state(1) != Idle {
-                                1
-                            } else {
-                                2
-                            }
-
-                            audio::trig(voice_to_use, PLAYER_SHOT_VARIATIONS[.last_shot_index], 0.3)
-                       }
-                    Enemy -> {
-                        voice_to_use := 3
-                        if audio::get_voice_state(voice_to_use) != Idle {
-                            continue
-                        } 
-
-                        audio::trig(voice_to_use, @audio/alien_fire1.wav, 0.3)
-                    }
-                }
-
-
-
-                .last_shot_index += 1
-                .last_shot_index %= 3
+            if shot.created_at <= .last_processed_sim_tick {
+                continue
             }
+
+            match shot.faction {
+                Player -> {
+                        voice_to_use := if audio::get_voice_state(1) != Idle {
+                            1
+                        } else {
+                            2
+                        }
+
+                        audio::trig(voice_to_use, PLAYER_SHOT_VARIATIONS[.last_shot_index], 0.3)
+                    }
+                Enemy -> {
+                    voice_to_use := 3
+                    if audio::get_voice_state(voice_to_use) != Idle {
+                        continue
+                    }
+
+                    audio::trig(voice_to_use, @audio/alien_fire1.wav, 0.3)
+                }
+            }
+
+            .last_shot_index += 1
+            .last_shot_index %= 3
         }
 
         for explosion in logic.explosions {
-            if explosion.created_at > .last_processed_sim_tick {
-                if logic.tick_count - .last_alien_explosion > 10 {
-                    .last_alien_explosion = logic.tick_count
-                }
+            if explosion.created_at <= .last_processed_sim_tick {
+                continue
+            }
+
+            if logic.tick_count - .last_alien_explosion > 10 {
+                .last_alien_explosion = logic.tick_count
             }
         }
 

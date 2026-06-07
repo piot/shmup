@@ -9,5 +9,5 @@ itch: {
 }
 
 lily: {
-    engine_version: "0.3.39"
+    engine_version: "0.4.6"
 }

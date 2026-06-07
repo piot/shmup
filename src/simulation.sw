@@ -1,10 +1,25 @@
-mod input::{PlayerInput}
+// Copyright (c) 2026 Peter Björklund.
+// Licensed under the MIT License.
+struct PlayerInput {
+    mouse_cursor_position: (Int, Int)
+    mouse_left_button: Bool
+    mouse_right_button: Bool
+    mouse_wheel_line_delta: (Float, Float)
+    move: (Float, Float)
+    fire: Bool
+}
+
+//#[zii]
+struct SimulationRequest {
+    player_input: PlayerInput
+}
+
 mod prnd::{Prnd}
 mod math::{
     Rect
     Position
-    Size
 }
+use lily
 
 const SCREEN_HEIGHT = 180
 const SCREEN_HEIGHT_F = 180.float()
@@ -65,9 +80,8 @@ enum EnemyType {
 impl EnemyType {
     fn is_cool(self) -> Bool {
         match self {
-            Alan -> false
+            Alan | Lips -> false
             BonBon -> true
-            Lips -> false
         }
     }
 }
@@ -87,7 +101,7 @@ struct Formation {
 
 struct Brain {
     time_until_attack: Int
-}
+    }
 
 struct Enemy {
     rect: Rect
@@ -200,7 +214,7 @@ impl Logic {
 
     fn check_player_input(mut self) {
         // Copy player input to ship and ship weapon
-        for mut player in .players {
+        for player in .players {
             when ship_index = player.assigned_ship_index {
                 // Unsafe borrow, it is scoped so you can see
                 // which part of the code that should make sure `.ships[ship_index]` isn't altered
@@ -259,10 +273,11 @@ impl Logic {
 
         .formations[formation_id] = { movement: Sine }
 
-        count_in_formation := Prnd::random_range_int(.prng_x + .tick_count, 3, 5)
         direction :=
             | .enemy_type.is_cool() -> -1.8
             | _ -> -1.0
+
+        count_in_formation := Prnd::random_range_int(.prng_x + .tick_count, 3, 5)
 
         for offset_index in 0..count_in_formation {
             random_y := Prnd::random_range_int(.tick_count, ENEMY_MARGIN, SCREEN_HEIGHT - ENEMY_MARGIN)
@@ -270,8 +285,8 @@ impl Logic {
             x_offset := offset_index * 32
 
             rect := Rect {
-                pos: { x: SCREEN_WIDTH.float() + 2.0 + x_offset.float(), y: random_y.float() },
-                size: [16.0, 16.0 ]
+                pos: { x: SCREEN_WIDTH.float() + 2.0 + x_offset.float(), y: random_y.float() }
+                size: [16.0, 16.0]
             }
 
             .enemies.add({
@@ -304,10 +319,8 @@ impl Logic {
         max_x :=  SCREEN_WIDTH_F - SHIP_X_MARGIN
         position.x = position.x.clamp(SHIP_X_MARGIN, max_x)
     }
-
     /// Called by the Lily2D engine every logic (Simulation) tick
-    #[host_call]
-    fn tick(mut self, input: PlayerInput) {
+    fn internal_tick(mut self, input: PlayerInput) {
         input_x, input_y = input.move
 
         for mut player in .players { // FIXME: Hack, it should only take the specific players, not all of them
@@ -326,46 +339,45 @@ impl Logic {
 
             shot_rect := Rect { pos: { x: shot.x - 2.0, y: shot.y - 2.0 }, size: { width: 7.0, height: 5.0 } }
             for enemy_id, enemy in .enemies {
-                if enemy.rect.intersects(shot_rect) {
-                    // safety: this works, since we can not remove anything that messes up the for loop
-                    .shots.erase(shot_id)
-
-                    // Having a helper function for remove enemy makes sense, since it can happen for multiple reasons
-                    // and from different parts of the code
-                    .remove_enemy_and_give_score(id:enemy_id, enemy_position:enemy.rect.pos)
+                if !enemy.rect.intersects(shot_rect) {
+                    continue
                 }
+
+                .shots.erase(shot_id)
+
+                .remove_enemy_and_give_score(id:enemy_id, enemy_position:enemy.rect.pos)
+
+                break
             }
         }
 
-        for shot_id, shot in .shots {
+        for shot in .shots {
             shot_pos := Position { x: shot.x, y: shot.y }
 
             for ship_id, ship in .ships {
                 ship_rect := Rect {
-                    pos: { x: ship.rect.pos.x - 8.0, y: ship.rect.pos.y - 8.0 },
+                    pos: { x: ship.rect.pos.x - 8.0, y: ship.rect.pos.y - 8.0 }
                     size: { width: 16.0, height: 16.0 }
                 }
 
                 if ship_rect.contains(shot_pos) {
                     .explosions.add(
                     {
-                        pos: ship.rect.pos,
-                        tick: 0,
-                        created_at: .tick_count,
+                        pos: ship.rect.pos
+                        tick: 0
+                        created_at: .tick_count
                         type: Fire
                     })
-
-                    .shots.erase(shot_id) // @safety: shot is unsafe
 
                     for mut player in .players {
                         when player_ship_id = player.assigned_ship_index  {
                             if player_ship_id == ship_id {
                                 player.assigned_ship_index = none
-                                player.respawn_cooldown = 120 // 2 seconds at 60 ticks/sec
+                                player.respawn_cooldown = 120 // about 2 seconds at 62.5 ticks/sec
                             }
                         }
                     }
-                    .ships.remove(ship_id) // @safety: ship is unsafe
+                    erase
                 }
             }
         }
@@ -394,25 +406,23 @@ impl Logic {
         }
 
         // Fire ship weapon if possible
-        {
-            for mut ship in .ships {
-                if !ship.weapon.wants_to_fire
-                    || ship.weapon.fire_cooldown != 0 {
-                    continue
-                }
-
-                ship.weapon.fire_cooldown = 24
-
-                .shots.add( {
-                    x: ship.rect.pos.x + 12.0,
-                    y: ship.rect.pos.y,
-                    direction: { x: 8.0, y: 0.0 },
-                    tick: 0,
-                    created_at: .tick_count,
-                    faction: Player,
-                    type: Tiny,
-                })
+        for mut ship in .ships {
+            if !ship.weapon.wants_to_fire
+                || ship.weapon.fire_cooldown != 0 {
+                continue
             }
+
+            ship.weapon.fire_cooldown = 24
+
+            .shots.add( {
+                x: ship.rect.pos.x + 12.0
+                y: ship.rect.pos.y
+                direction: { x: 8.0, y: 0.0 }
+                tick: 0
+                created_at: .tick_count
+                faction: Player
+                type: Tiny
+            })
         }
 
 
@@ -429,18 +439,20 @@ impl Logic {
                     continue
                 }
 
-                vector_to_ship := target_ship.rect.pos.sub(enemy.rect.pos)
-                direction_to_ship := vector_to_ship.normalize()
+                direction_to_ship := {
+                    vector_to_ship := target_ship.rect.pos.sub(enemy.rect.pos)
+                    vector_to_ship.normalize()
+                }
 
                 initial_projectile_pos := enemy.rect.pos.add(direction_to_ship.scale(4.0))
                 .shots.add( {
-                        x: initial_projectile_pos.x,
-                        y: initial_projectile_pos.y,
-                        direction: direction_to_ship.scale(1.5),
-                        tick: 0,
-                        created_at: .tick_count,
-                        faction: Enemy,
-                        type: Magentas,
+                        x: initial_projectile_pos.x
+                        y: initial_projectile_pos.y
+                        direction: direction_to_ship.scale(1.5)
+                        tick: 0
+                        created_at: .tick_count
+                        faction: Enemy
+                        type: Magentas
                     })
             }
         }
@@ -450,12 +462,15 @@ impl Logic {
 
 
         // Move enemies and let them sway
-        for id, mut enemy in .enemies {
+        for mut enemy in .enemies {
             enemy.rect.pos.x += enemy.direction * 1.0
             enemy.could_be_together.time += 1
-            sway_time := enemy.could_be_together.time.float() * 0.02
-            sway_angle := sway_time * 6.28
-            y := sway_angle.cos() * MAGNITUDE
+            y := {
+                sway_time := enemy.could_be_together.time.float() * 0.02
+                sway_angle := sway_time * 6.28
+                sway_angle.cos() * MAGNITUDE
+            }
+
             enemy.rect.pos.y = enemy.could_be_together.base_y + y
 
             if enemy.rect.pos.x < -32.0 {
@@ -464,7 +479,7 @@ impl Logic {
                    // print('remove formation {enemy.formation}')
                     .formations.remove(enemy.formation)
                 }
-                .enemies.erase(id) // NOTE: enemy binding is invalid after this
+                erase
             }
         }
 
@@ -484,11 +499,9 @@ impl Logic {
         // === Explosions ===
 
         // increase time and remove when done
-        for explosion_id, mut explosion in .explosions {
+        for mut explosion in .explosions {
             // This is just to show off the guard expression syntax
-            | explosion.tick >= 30 -> {
-                .explosions.erase(explosion_id)
-            }
+            | explosion.tick >= 30 -> erase
             | _ -> {
                 explosion.tick += 1
                 explosion.pos.x += 0.5
@@ -499,37 +512,33 @@ impl Logic {
 
         // === Ship Weapons ===
         // Cooldown for the weapon.
-        {
-            for mut ship in .ships {
-                if ship.weapon.fire_cooldown > 0 {
-                    ship.weapon.fire_cooldown -= 1
-                }
+        for mut ship in .ships {
+            if ship.weapon.fire_cooldown > 0 {
+                ship.weapon.fire_cooldown -= 1
             }
         }
 
         // Move ships
-        {
-            for mut ship in .ships {
-                Logic::move_in_x_with_direction(&ship.rect.pos, ship.direction.x)
-                Logic::move_in_y_with_direction(&ship.rect.pos, ship.direction.y)
-            }
+        for mut ship in .ships {
+            Logic::move_in_x_with_direction(&ship.rect.pos, ship.direction.x)
+            Logic::move_in_y_with_direction(&ship.rect.pos, ship.direction.y)
         }
 
 
         // Bonus items should move to the left away
-        for bonus_id, mut bonus_item in .bonus_items {
+        for mut bonus_item in .bonus_items {
             if bonus_item.pos.x < -30.0 {
-                .bonus_items.erase(bonus_id)
+                erase
             } else {
-                bonus_item.pos.x -= 0.6 //
+                bonus_item.pos.x -= 0.6
             }
         }
 
         // Check if ship picks up bonus
         for bonus_item_id, bonus_item in .bonus_items {
             bonus_item_rect := Rect {
-                pos: { x: bonus_item.pos.x, y: bonus_item.pos.y },
-                size: { width: 10.0, height: 10.0 },
+                pos: { x: bonus_item.pos.x, y: bonus_item.pos.y }
+                size: { width: 10.0, height: 10.0 }
             }
 
             // this could be done with normal for, but it is to show and test transformers (collection members)
@@ -549,15 +558,20 @@ impl Logic {
         }
 
         // Floating score bonus tick
-        for bonus_id, mut bonus in .score_bonus {
+        for mut bonus in .score_bonus {
             // This is just to show that the scope is not needed for if statements
             // But it is strongly recommended with '{' '}' for easier reading
             if bonus.tick >= 30
-                .score_bonus.erase(bonus_id)
+                erase
              else {
                 bonus.tick += 1
             }
         }
 
     } // end of tick
+
+    #[host_call]
+    fn tick(mut self, request: SimulationRequest) {
+        .internal_tick(request.player_input)
+    }
 }

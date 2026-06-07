@@ -2,7 +2,7 @@
 
 ## Run the example
 
-Use Lily2D Hub to launch it or use lily cli:
+Use Lily2D Hub to build and launch it or use lily cli:
 
 ```sh
 lily build
@@ -25,5 +25,8 @@ These are the assets used in the game
 - [Short Explosion](https://freesound.org/people/wubitog/sounds/200466/) [cc0][cc0]
 - [Powerup 07](https://freesound.org/people/LilMati/sounds/523649/) [cc0][cc0]
 - [Bang/Explosion Metallic](https://freesound.org/people/Werra/sounds/244394/) [cc0][cc0]
+
+- `short_song.ogg`. Copyright (c) 2026 Peter Björklund. All rights reserved.
+- [Kenney Particle Pack](https://kenney.nl/assets/particle-pack) [cc0][cc0]
 
 [cc0]: https://creativecommons.org/publicdomain/zero/1.0/

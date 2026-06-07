@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Peter Björklund.
+// Licensed under the MIT License.
+
 #![api]
 
 struct Prnd

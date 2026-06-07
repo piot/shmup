@@ -1,21 +1,23 @@
 name: Shmup - Example Project
-engine_version: "0.3.40"
-engine_asset_dir: lily/
-
+engine_version: "0.6.22"
 
 app: {
     bundle_id: shmup.outbreakstudios.com
     company: outbreak studios
-    name: Shmuppy - Revenge of Zorgon
+    name: shmuppy
+}
+
+input: {
+    enable: true
+}
+
+ audio: {
+    enable: true
 }
 
 render: {
     mode: :windowed{
-        width: 640
-        height: 360
+        width: 1280
+        height: 720
     }
-}
-
-vm: {
-    heap: 2MiB
 }
