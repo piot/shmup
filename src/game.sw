@@ -15,6 +15,8 @@ impl Game {
     #[host_call]
     fn tick(mut self) -> SimulationRequest {
         player_input := .input.tick()
-        { player_input: player_input }
+        {
+            player_input: player_input
+        }
     }
 }

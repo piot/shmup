@@ -11,10 +11,10 @@ struct Audio {
 }
 
 const PLAYER_SHOT_VARIATIONS: [audio::SoundId; 3] = [
-        @audio/shot1.wav
-        @audio/shot2.wav
-        @audio/shot3.wav
-    ]
+    @audio/shot1.wav
+    @audio/shot2.wav
+    @audio/shot3.wav
+]
 
 impl Audio {
     fn new() -> Audio {
@@ -32,7 +32,6 @@ impl Audio {
         for variation in PLAYER_SHOT_VARIATIONS {
             audio::load_wav_stereo(variation, sound_definition)
         }
-
         audio::load_wav_stereo(@audio/alien_fire1.wav, sound_definition)
 
         {..}
@@ -41,7 +40,7 @@ impl Audio {
     #[host_call]
     fn tick(mut self, logic: simulation::Logic) {
         if audio::get_voice_state(0) == Idle {
-            print('start a new song!')
+            print("start a new song!")
             music_sound_definition := audio::SoundDefinition {
                 adsr: {
                     attack: 100
@@ -52,8 +51,13 @@ impl Audio {
                 root_note: 0
                 gate_duration: 0
             }
-
-            audio::stream_ogg_vorbis(0, music_sound_definition.root_note, @audio/short_song.ogg, music_sound_definition, 1.0)
+            audio::stream_ogg_vorbis(
+                0
+                music_sound_definition.root_note
+                @audio/short_song.ogg
+                music_sound_definition
+                1.0
+            )
         }
         for shot in logic.shots {
             if shot.created_at <= .last_processed_sim_tick {
@@ -62,20 +66,22 @@ impl Audio {
 
             match shot.faction {
                 Player -> {
-                        voice_to_use := if audio::get_voice_state(1) != Idle {
-                            1
-                        } else {
-                            2
-                        }
-
-                        audio::trig(voice_to_use, PLAYER_SHOT_VARIATIONS[.last_shot_index], 0.3)
+                    voice_to_use := if audio::get_voice_state(1) != Idle {
+                        1
+                    } else {
+                        2
                     }
+                    audio::trig(
+                        voice_to_use
+                        PLAYER_SHOT_VARIATIONS[.last_shot_index]
+                        0.3
+                    )
+                }
                 Enemy -> {
                     voice_to_use := 3
                     if audio::get_voice_state(voice_to_use) != Idle {
                         continue
                     }
-
                     audio::trig(voice_to_use, @audio/alien_fire1.wav, 0.3)
                 }
             }
@@ -95,8 +101,7 @@ impl Audio {
         }
 
         for ship in logic.ships {
-            if ship.picked_up_bonus_at > .last_processed_sim_tick {
-            }
+            if ship.picked_up_bonus_at > .last_processed_sim_tick {}
         }
 
         .last_processed_sim_tick = logic.tick_count

@@ -12,7 +12,10 @@ type Int2 = (Int, Int)
 
 impl Position {
     fn new(x: Float, y: Float) -> Position {
-        Position { x: x, y: y }
+        Position {
+            x: x
+            y: y
+        }
     }
 
     fn add_mut(mut self, other: Position) {
@@ -53,7 +56,7 @@ impl Position {
     // returns the distance
     fn distance(self, other: Position) -> Float {
         diff := .sub(other)
-       diff.x.magnitude(diff.y)
+        diff.x.magnitude(diff.y)
     }
 
     // returns a distance value, useful for comparison
@@ -63,7 +66,7 @@ impl Position {
         sum
     }
 
-
+    
     // returns the normalized vector
     fn normalize(self) -> Position {
         norm_x, norm_y = when normalized = .x.normalize(.y) {
@@ -71,7 +74,7 @@ impl Position {
         } else {
             (0.0, 0.0)
         }
-        [ norm_x , norm_y ]
+        [norm_x, norm_y]
     }
 
     fn direction(self) -> Position {
@@ -102,27 +105,30 @@ struct Rect {
 
 impl Rect {
     fn new(pos: Position, size: Size) -> Rect {
-        { pos: pos, size: size }
+        {
+            pos: pos
+            size: size
+        }
     }
 
     fn intersects(self, other: Rect) -> Bool {
-        .pos.x < other.pos.x + other.size.width &&
-        .pos.x + .size.width > other.pos.x &&
-        .pos.y < other.pos.y + other.size.height &&
-        .pos.y + .size.height > other.pos.y
+        .pos.x < other.pos.x + other.size.width
+            && .pos.x + .size.width > other.pos.x
+            && .pos.y < other.pos.y + other.size.height
+            && .pos.y + .size.height > other.pos.y
     }
 
     fn contains(self, other: Position) -> Bool {
-        other.x >= .pos.x &&
-        other.x <= .pos.x + .size.width &&
-        other.y >= .pos.y &&
-        other.y <= .pos.y + .size.height
+        other.x >= .pos.x
+            && other.x <= .pos.x + .size.width
+            && other.y >= .pos.y
+            && other.y <= .pos.y + .size.height
     }
 
     fn contains_xy(self, x: Float, y: Float) -> Bool {
-        x >= .pos.x &&
-        x <= .pos.x + .size.width &&
-        y >= .pos.y &&
-        y <= .pos.y + .size.height
+        x >= .pos.x
+            && x <= .pos.x + .size.width
+            && y >= .pos.y
+            && y <= .pos.y + .size.height
     }
 }

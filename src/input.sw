@@ -20,11 +20,9 @@ struct Input {
 }
 
 impl Input {
-
     fn tick(mut self) -> PlayerInput {
         self.dummy = 1
         active_devices: Vec<Int; 8> = get_active_devices()
-
         mut fire := false
         mut move := (0.0, 0.0)
 
@@ -39,14 +37,13 @@ impl Input {
                 move = (x, y)
             }
 
-           //_found_type := get_device_type(device_id)
-           //_action_source := get_action_source::<SpaceCraft>("fire", device_id)
-       }
+            //_found_type := get_device_type(device_id)
+            //_action_source := get_action_source::<SpaceCraft>("fire", device_id)
+        }
 
         PlayerInput {
             fire: fire
             move: move
-            ..
-        }
+        ..}
     }
 }
