@@ -6,7 +6,7 @@ license: MIT
 type: :main
 edition: 2026
 
-compiler_version: "0.5.55"
+compiler_version: "0.6.10"
 
 extension: sw
 artifact: {
@@ -15,7 +15,7 @@ artifact: {
 }
 
 dependencies: {
-    lily: "0.6.22"
+    lily: "0.6.30"
     gfx: "0.2.1"
 }
 
