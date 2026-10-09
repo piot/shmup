@@ -233,7 +233,6 @@ impl Render {
                 presentation.age += 0.016 // TODO: use Int age
             }
         }
-
         .tick_id += 1
         for explosion_id, explosion in sim.explosions {
             mut lookup_index := -1
@@ -527,7 +526,6 @@ impl Render {
                 // color: Color::new(1.0, 1.0, 1.0, normalized_x_movement),
             }
         }
-
         ship_count := sprite_index - sprite_index_start
         if ship_count > 0 {
             .ship_atlas.write_atlas_info(.ship_atlas_info) // atlas information

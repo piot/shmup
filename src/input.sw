@@ -40,7 +40,6 @@ impl Input {
             //_found_type := get_device_type(device_id)
             //_action_source := get_action_source::<SpaceCraft>("fire", device_id)
         }
-
         PlayerInput {
             fire: fire
             move: move

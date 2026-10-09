@@ -12,4 +12,4 @@ anchor simulation = Logic::new()
 anchor simulation_request = SimulationRequest {..}
 anchor render = Render::new()
 anchor audio = Audio::new()
-anchor game = Game::new()
+anchor app = Game::new()

@@ -46,6 +46,7 @@ impl Position {
         }
     }
 
+    /// returns the difference between two positions
     fn sub(self, other: Position) -> Position {
         Position {
             x: .x - other.x
@@ -53,21 +54,21 @@ impl Position {
         }
     }
 
-    // returns the distance
+    /// returns the distance
     fn distance(self, other: Position) -> Float {
         diff := .sub(other)
         diff.x.magnitude(diff.y)
     }
 
-    // returns a distance value, useful for comparison
+    /// returns a distance value, useful for comparison
     fn distance_sqr_scaled(self, other: Position) -> Float {
         diff := .sub(other)
         sum := diff.x.magnitude_sqr_scaled(diff.y)
         sum
     }
 
-    
-    // returns the normalized vector
+
+    /// returns the normalized vector
     fn normalize(self) -> Position {
         norm_x, norm_y = when normalized = .x.normalize(.y) {
             normalized
